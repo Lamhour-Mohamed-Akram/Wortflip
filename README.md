@@ -35,7 +35,7 @@ Der Build ist eine rein statische Seite (`dist/`). Es gibt keine Server-Routen; 
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | **Cloudflare Pages** | Build command `npm run build`, Build output directory `dist`, Node-Version 20+.                                                     |
 | **Netlify**          | `netlify.toml` liegt bei (Build `npm run build`, Publish `dist`). Einfach das Repository verbinden.                                  |
-| **GitHub Pages**     | Workflow `.github/workflows/deploy-pages.yml` liegt bei. In den Repo-Einstellungen unter *Pages* „GitHub Actions“ als Quelle wählen. |
+| **GitHub Pages**     | Möglich mit `BASE_PATH=/Wortflip/ npm run build` und einem eigenen Actions-Workflow; die Live-Version läuft auf Netlify.           |
 
 **Unterpfad (zum Beispiel GitHub Pages unter `https://name.github.io/wortflip/`)**: Der Basispfad wird beim Build gesetzt:
 
@@ -43,7 +43,9 @@ Der Build ist eine rein statische Seite (`dist/`). Es gibt keine Server-Routen; 
 BASE_PATH=/wortflip/ npm run build
 ```
 
-Manifest, Service Worker, Icons und Schriften werden dann relativ zu diesem Pfad ausgeliefert. Der beigelegte Workflow setzt `BASE_PATH` automatisch auf den Repository-Namen.
+Manifest, Service Worker, Icons und Schriften werden dann relativ zu diesem Pfad ausgeliefert.
+
+**Live:** https://wortflip.netlify.app
 
 ### PWA und neue Versionen
 
