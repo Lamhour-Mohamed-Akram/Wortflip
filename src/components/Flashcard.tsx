@@ -14,7 +14,7 @@ export function FlashcardFront({ item }: { item: VocabularyItem }) {
         {item.article && <span className="font-mono text-xl font-bold text-gray">{item.article}</span>}
         <span
           lang="de"
-          className="w-full text-balance text-[clamp(2.1rem,11vw,3.4rem)] font-black leading-[1.05] tracking-tight [overflow-wrap:anywhere] hyphens-auto"
+          className="w-full text-balance text-[clamp(2.1rem,11vw,3rem)] font-black leading-[1.05] tracking-tight [overflow-wrap:anywhere] hyphens-none"
         >
           {item.word}
         </span>
