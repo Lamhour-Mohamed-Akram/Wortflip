@@ -11,9 +11,3 @@
   [headers.values]
     Cache-Control = "no-cache"
 
-# The Netlify subdomain always sends visitors to the real domain.
-[[redirects]]
-  from = "https://wortflip.netlify.app/*"
-  to = "https://wortflip.de/:splat"
-  status = 301
-  force = true
