@@ -58,6 +58,15 @@ export function InstallCard({ className, compact = false }: InstallCardProps) {
   );
 }
 
+/** Where the share button sits depends on the iPhone browser; all of them can add web apps since iOS 16.4. */
+function iosShareStep() {
+  const ua = navigator.userAgent;
+  if (/CriOS/.test(ua)) return <>Tippe in Chrome oben rechts auf <b>Teilen</b></>;
+  if (/EdgiOS/.test(ua)) return <>Tippe in Edge unten auf <b>Teilen</b></>;
+  if (/FxiOS/.test(ua)) return <>Tippe in Firefox unten auf das <b>Menü</b> und dann auf <b>Teilen</b></>;
+  return <>Tippe in Safari unten auf <b>Teilen</b></>;
+}
+
 function InstallHelpDialog({ open, method, onClose }: { open: boolean; method: string; onClose: () => void }) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
@@ -73,7 +82,7 @@ function InstallHelpDialog({ open, method, onClose }: { open: boolean; method: s
     method === 'ios'
       ? [
           <>
-            Tippe in Safari unten auf <b>Teilen</b> <ShareIcon size={16} className="inline align-text-bottom" />.
+            {iosShareStep()} <ShareIcon size={16} className="inline align-text-bottom" />.
           </>,
           <>
             Wähle <b>Zum Home-Bildschirm</b> <PlusSquareIcon size={16} className="inline align-text-bottom" />.
