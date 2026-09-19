@@ -31,7 +31,7 @@ export default defineConfig({
         name: 'Wortflip: Deutsch lernen mit Swipe',
         short_name: 'Wortflip',
         description:
-          'Deutsch-Wortschatz von A1 bis B1 mit wischbaren Karteikarten lernen. Offline, ohne Anmeldung.',
+          'Deutsch-Wortschatz von A1 bis C1 mit wischbaren Karteikarten lernen. Offline, ohne Anmeldung.',
         lang: 'de',
         display: 'standalone',
         orientation: 'any',

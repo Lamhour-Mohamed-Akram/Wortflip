@@ -8,7 +8,9 @@
  * generated file is bundled like the hand-written vocabulary.
  *
  *   node scripts/import-vocabulary.mjs --list scripts/import/wordlist.txt [--level A1]
- *   node scripts/import-vocabulary.mjs --frequency 2000 [--a1 500] [--a2 1200] [--limit 1500]
+ *   node scripts/import-vocabulary.mjs --frequency 2000 [--a1 500] [--a2 1200] [--b1 3000] [--b2 7000] [--limit 1500]
+ *   (rank thresholds: below a1 -> A1, below a2 -> A2, below b1 -> B1, below b2 -> B2, else C1;
+ *    --min-rank N skips the N most frequent tokens; --strict drops words reached through an inflected form)
  *   Options: --merge (keep the entries already in imported.json and add new ones)
  *            --override-level (with --merge: the list's level wins for words already imported)
  *            --no-sentences  --dry-run  --out <file>  --help
@@ -48,7 +50,7 @@ const REQUEST_DELAY_MS = 1000;
 const WIKTIONARY_DELAY_MS = 3000;
 const WIKTIONARY_BATCH = 30;
 const MAX_ATTEMPTS = 8;
-const LEVELS = ['A1', 'A2', 'B1'];
+const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1'];
 const TYPE_LABEL = { noun: 'nomen', verb: 'verb', adjective: 'adjektiv', adverb: 'adverb', preposition: 'praeposition', conjunction: 'konjunktion', other: 'sonstiges' };
 
 const SOURCES = {
@@ -85,7 +87,7 @@ function printHelp() {
 }
 
 function parseArgs(argv) {
-  const args = { list: null, frequency: 0, a1: 500, a2: 1200, level: 'A1', limit: Infinity, sentences: true, dryRun: false, out: OUT_DEFAULT, merge: false, overrideLevel: false };
+  const args = { list: null, frequency: 0, a1: 500, a2: 1200, b1: 3000, b2: 7000, minRank: 0, strict: false, level: 'A1', limit: Infinity, sentences: true, dryRun: false, out: OUT_DEFAULT, merge: false, overrideLevel: false };
   for (let i = 0; i < argv.length; i++) {
     const flag = argv[i];
     const next = () => argv[++i];
@@ -93,6 +95,10 @@ function parseArgs(argv) {
     else if (flag === '--frequency') args.frequency = Number(next());
     else if (flag === '--a1') args.a1 = Number(next());
     else if (flag === '--a2') args.a2 = Number(next());
+    else if (flag === '--b1') args.b1 = Number(next());
+    else if (flag === '--b2') args.b2 = Number(next());
+    else if (flag === '--min-rank') args.minRank = Number(next());
+    else if (flag === '--strict') args.strict = true;
     else if (flag === '--level') args.level = next();
     else if (flag === '--limit') args.limit = Number(next());
     else if (flag === '--out') args.out = next();
@@ -323,7 +329,7 @@ function readImported(file) {
 function handWrittenKeys() {
   const ids = new Set();
   const words = new Set();
-  for (const level of ['a1', 'a2', 'b1']) {
+  for (const level of ['a1', 'a2', 'b1', 'b2', 'c1']) {
     const text = readFileSync(join(VOCAB_DIR, `${level}.ts`), 'utf8');
     for (const match of text.matchAll(/id: '([^']+)', word: '([^']+)'(?:, article: '[^']+')?(?:, plural: '[^']+')?, type: '([^']+)'/g)) {
       ids.add(match[1]);
@@ -349,12 +355,14 @@ async function main() {
     candidates = readWordList(args.list, args.level).map((w) => ({ ...w, titles: [w.title] }));
   } else {
     const tokens = await tokensFromFrequencyList(args.frequency);
-    candidates = tokens.map((token, rank) => ({
-      title: token,
-      rank,
-      level: rank < args.a1 ? 'A1' : rank < args.a2 ? 'A2' : 'B1',
-      titles: [token, capitalize(token)],
-    }));
+    candidates = tokens
+      .map((token, rank) => ({
+        title: token,
+        rank,
+        level: rank < args.a1 ? 'A1' : rank < args.a2 ? 'A2' : rank < args.b1 ? 'B1' : rank < args.b2 ? 'B2' : 'C1',
+        titles: [token, capitalize(token)],
+      }))
+      .filter((c) => c.rank >= args.minRank);
   }
   report.requested = candidates.length;
   console.log(`Looking up ${candidates.length} words on the German Wiktionary`);
@@ -388,8 +396,10 @@ async function main() {
     let found = null;
     for (const title of candidate.titles) {
       let info = analysed.get(title);
-      if (info?.lemma) info = analysed.get(info.lemma);
-      if (info && !info.lemma) {
+      // In strict mode a token must be the base form itself; "wassern" reached
+      // through the plural "Wassern" is exactly the kind of rare lemma to avoid.
+      if (info?.lemma) info = args.strict ? null : analysed.get(info.lemma);
+      if (info && !info.lemma && (!args.strict || info.word.length >= 4)) {
         found = info;
         break;
       }

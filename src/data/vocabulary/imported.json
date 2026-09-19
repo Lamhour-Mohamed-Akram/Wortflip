@@ -19339,26 +19339,6 @@
       }
     },
     {
-      "id": "anspruch",
-      "word": "Anspruch",
-      "article": "der",
-      "plural": "Ansprüche",
-      "type": "noun",
-      "level": "B1",
-      "definitionDe": "Berechtigte Forderung an etwas oder jemanden: Forderung, Erwartung.",
-      "exampleDe": "Ich erhebe keinen Anspruch auf sie.",
-      "sourceIds": [
-        "de-wiktionary",
-        "tatoeba"
-      ],
-      "definitionUrl": "https://de.wiktionary.org/wiki/Anspruch",
-      "exampleSource": {
-        "sourceId": "tatoeba",
-        "author": "Tamy",
-        "url": "https://tatoeba.org/de/sentences/show/4626280"
-      }
-    },
-    {
       "id": "anstellen",
       "word": "anstellen",
       "type": "verb",
@@ -21011,29 +20991,6 @@
         "sourceId": "tatoeba",
         "author": "Pfirsichbaeumchen",
         "url": "https://tatoeba.org/de/sentences/show/5821519"
-      }
-    },
-    {
-      "id": "begegnen",
-      "word": "begegnen",
-      "type": "verb",
-      "level": "B1",
-      "definitionDe": "Jemanden, meist eher zufällig, treffen.",
-      "exampleDe": "Irgendwann werden wir uns wieder begegnen.",
-      "verbForms": {
-        "thirdPersonPresent": "er begegnet",
-        "preterite": "begegnete",
-        "participleII": "ist begegnet"
-      },
-      "sourceIds": [
-        "de-wiktionary",
-        "tatoeba"
-      ],
-      "definitionUrl": "https://de.wiktionary.org/wiki/begegnen",
-      "exampleSource": {
-        "sourceId": "tatoeba",
-        "author": "mhr",
-        "url": "https://tatoeba.org/de/sentences/show/13973158"
       }
     },
     {
@@ -25623,28 +25580,6 @@
       }
     },
     {
-      "id": "erforderlich",
-      "word": "erforderlich",
-      "type": "adjective",
-      "level": "B1",
-      "definitionDe": "Jemand/etwas ist nötig, wird gebraucht.",
-      "exampleDe": "Ist hier das erste Komma erforderlich?",
-      "adjectiveForms": {
-        "comparative": "erforderlicher",
-        "superlative": "am erforderlichsten"
-      },
-      "sourceIds": [
-        "de-wiktionary",
-        "tatoeba"
-      ],
-      "definitionUrl": "https://de.wiktionary.org/wiki/erforderlich",
-      "exampleSource": {
-        "sourceId": "tatoeba",
-        "author": "mhr",
-        "url": "https://tatoeba.org/de/sentences/show/14007200"
-      }
-    },
-    {
       "id": "erfordern",
       "word": "erfordern",
       "type": "verb",
@@ -30177,26 +30112,6 @@
       }
     },
     {
-      "id": "herkunft",
-      "word": "Herkunft",
-      "article": "die",
-      "plural": "Herkünfte",
-      "type": "noun",
-      "level": "B1",
-      "definitionDe": "Woher etwas oder jemand kommt.",
-      "exampleDe": "Ziri schien algerischer Herkunft zu sein.",
-      "sourceIds": [
-        "de-wiktionary",
-        "tatoeba"
-      ],
-      "definitionUrl": "https://de.wiktionary.org/wiki/Herkunft",
-      "exampleSource": {
-        "sourceId": "tatoeba",
-        "author": "Waldelfe",
-        "url": "https://tatoeba.org/de/sentences/show/13554020"
-      }
-    },
-    {
       "id": "hersteller",
       "word": "Hersteller",
       "article": "der",
@@ -34475,26 +34390,6 @@
       }
     },
     {
-      "id": "mangel",
-      "word": "Mangel",
-      "article": "der",
-      "plural": "Mängel",
-      "type": "noun",
-      "level": "B1",
-      "definitionDe": "Unzureichende Menge oder unzureichendes Ausmaß von etwas.",
-      "exampleDe": "Es herrscht ein Mangel an Weizen.",
-      "sourceIds": [
-        "de-wiktionary",
-        "tatoeba"
-      ],
-      "definitionUrl": "https://de.wiktionary.org/wiki/Mangel",
-      "exampleSource": {
-        "sourceId": "tatoeba",
-        "author": "Naina",
-        "url": "https://tatoeba.org/de/sentences/show/13893379"
-      }
-    },
-    {
       "id": "mappe",
       "word": "Mappe",
       "article": "die",
@@ -35740,26 +35635,6 @@
         "sourceId": "tatoeba",
         "author": "mhr",
         "url": "https://tatoeba.org/de/sentences/show/13581731"
-      }
-    },
-    {
-      "id": "nachfrage",
-      "word": "Nachfrage",
-      "article": "die",
-      "plural": "Nachfragen",
-      "type": "noun",
-      "level": "B1",
-      "definitionDe": "Nur im Singular: Bereitschaft, etwas zu kaufen.",
-      "exampleDe": "Der Preis variiert je nach Nachfrage.",
-      "sourceIds": [
-        "de-wiktionary",
-        "tatoeba"
-      ],
-      "definitionUrl": "https://de.wiktionary.org/wiki/Nachfrage",
-      "exampleSource": {
-        "sourceId": "tatoeba",
-        "author": "mhr",
-        "url": "https://tatoeba.org/de/sentences/show/13981547"
       }
     },
     {
@@ -39405,26 +39280,6 @@
         "sourceId": "tatoeba",
         "author": "Waldelfe",
         "url": "https://tatoeba.org/de/sentences/show/12582064"
-      }
-    },
-    {
-      "id": "ruecksicht",
-      "word": "Rücksicht",
-      "article": "die",
-      "plural": "Rücksichten",
-      "type": "noun",
-      "level": "B1",
-      "definitionDe": "Wohlwollendes Verhalten gegenüber jemandem oder etwas unter Beachtung der Umstände.",
-      "exampleDe": "Wir werden auf Ihre Gefühle Rücksicht nehmen.",
-      "sourceIds": [
-        "de-wiktionary",
-        "tatoeba"
-      ],
-      "definitionUrl": "https://de.wiktionary.org/wiki/R%C3%BCcksicht",
-      "exampleSource": {
-        "sourceId": "tatoeba",
-        "author": "mayabe",
-        "url": "https://tatoeba.org/de/sentences/show/12531232"
       }
     },
     {
@@ -46365,29 +46220,6 @@
       "definitionUrl": "https://de.wiktionary.org/wiki/verpflegen"
     },
     {
-      "id": "verpflichten",
-      "word": "verpflichten",
-      "type": "verb",
-      "level": "B1",
-      "definitionDe": "Jemanden in die Pflicht nehmen, etwas zu tun.",
-      "exampleDe": "Es ist nicht verpflichtend zu reservieren.",
-      "verbForms": {
-        "thirdPersonPresent": "er verpflichtet",
-        "preterite": "verpflichtete",
-        "participleII": "hat verpflichtet"
-      },
-      "sourceIds": [
-        "de-wiktionary",
-        "tatoeba"
-      ],
-      "definitionUrl": "https://de.wiktionary.org/wiki/verpflichten",
-      "exampleSource": {
-        "sourceId": "tatoeba",
-        "author": "Tom9358",
-        "url": "https://tatoeba.org/de/sentences/show/13921167"
-      }
-    },
-    {
       "id": "verraten",
       "word": "verraten",
       "type": "verb",
@@ -47266,24 +47098,6 @@
       }
     },
     {
-      "id": "vorlaeufig",
-      "word": "vorläufig",
-      "type": "adjective",
-      "level": "B1",
-      "definitionDe": "Nicht endgültig, bis zu einer späteren Festlegung gültig.",
-      "exampleDe": "Genaueres kann ich vorläufig nicht sagen.",
-      "sourceIds": [
-        "de-wiktionary",
-        "tatoeba"
-      ],
-      "definitionUrl": "https://de.wiktionary.org/wiki/vorl%C3%A4ufig",
-      "exampleSource": {
-        "sourceId": "tatoeba",
-        "author": "mhr",
-        "url": "https://tatoeba.org/de/sentences/show/14050477"
-      }
-    },
-    {
       "id": "vorlesen",
       "word": "vorlesen",
       "type": "verb",
@@ -47965,29 +47779,6 @@
         "sourceId": "tatoeba",
         "author": "Ioan_Cristian",
         "url": "https://tatoeba.org/de/sentences/show/13910428"
-      }
-    },
-    {
-      "id": "widersprechen",
-      "word": "widersprechen",
-      "type": "verb",
-      "level": "B1",
-      "definitionDe": "Auf eine Aussage mit einer gegenteiligen Aussage antworten.",
-      "exampleDe": "Seine Worte widersprechen der Realität.",
-      "verbForms": {
-        "thirdPersonPresent": "er widerspricht",
-        "preterite": "widersprach",
-        "participleII": "hat widersprochen"
-      },
-      "sourceIds": [
-        "de-wiktionary",
-        "tatoeba"
-      ],
-      "definitionUrl": "https://de.wiktionary.org/wiki/widersprechen",
-      "exampleSource": {
-        "sourceId": "tatoeba",
-        "author": "mhr",
-        "url": "https://tatoeba.org/de/sentences/show/12713193"
       }
     },
     {
@@ -48959,26 +48750,6 @@
       }
     },
     {
-      "id": "zugang",
-      "word": "Zugang",
-      "article": "der",
-      "plural": "Zugänge",
-      "type": "noun",
-      "level": "B1",
-      "definitionDe": "Das Herangehen an etwas, das Hineingehen in etwas.",
-      "exampleDe": "Zugang für Hunde nur mit Maulkorb.",
-      "sourceIds": [
-        "de-wiktionary",
-        "tatoeba"
-      ],
-      "definitionUrl": "https://de.wiktionary.org/wiki/Zugang",
-      "exampleSource": {
-        "sourceId": "tatoeba",
-        "author": "manese",
-        "url": "https://tatoeba.org/de/sentences/show/8117487"
-      }
-    },
-    {
       "id": "zugaenglich",
       "word": "zugänglich",
       "type": "adjective",
@@ -49096,24 +48867,6 @@
         "sourceId": "tatoeba",
         "author": "carlosalberto",
         "url": "https://tatoeba.org/de/sentences/show/13857047"
-      }
-    },
-    {
-      "id": "zunaechst",
-      "word": "zunächst",
-      "type": "adverb",
-      "level": "B1",
-      "definitionDe": "Vor einer zeitlichen oder abstrakten Reihenfolge.",
-      "exampleDe": "Lassen Sie uns zunächst darüber nachdenken.",
-      "sourceIds": [
-        "de-wiktionary",
-        "tatoeba"
-      ],
-      "definitionUrl": "https://de.wiktionary.org/wiki/zun%C3%A4chst",
-      "exampleSource": {
-        "sourceId": "tatoeba",
-        "author": "felix63",
-        "url": "https://tatoeba.org/de/sentences/show/14033990"
       }
     },
     {

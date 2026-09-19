@@ -106,7 +106,7 @@ export function WordsScreen({ onNavigate }: { onNavigate: (tab: Tab) => void }) 
       <p className="mt-1.5 text-xs text-gray">Die Suche läuft nur auf deinem Gerät, ohne Internet und ohne Server.</p>
 
       <div className="mt-4">
-        <ChoiceGroup name="words-level" legend="Level" options={LEVEL_CHOICES} value={level} onChange={setLevel} />
+        <ChoiceGroup name="words-level" legend="Level" options={LEVEL_CHOICES} value={level} onChange={setLevel} columns={3} />
       </div>
 
       <div className="mt-4" role="group" aria-label="Wortart">

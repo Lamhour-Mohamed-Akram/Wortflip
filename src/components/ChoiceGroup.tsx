@@ -14,14 +14,16 @@ interface ChoiceGroupProps<T extends string | number> {
   value: T;
   onChange: (value: T) => void;
   legendClassName?: string;
+  /** Tiles per row; defaults to one row with all options. */
+  columns?: number;
 }
 
 /** Native radio buttons styled as chunky toggle tiles (keyboard arrows work out of the box). */
-export function ChoiceGroup<T extends string | number>({ name, legend, options, value, onChange, legendClassName }: ChoiceGroupProps<T>) {
+export function ChoiceGroup<T extends string | number>({ name, legend, options, value, onChange, legendClassName, columns }: ChoiceGroupProps<T>) {
   return (
     <fieldset>
       <legend className={cn('mb-2 font-mono text-[11px] font-bold uppercase tracking-wider text-gray', legendClassName)}>{legend}</legend>
-      <div className="grid gap-2.5" style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}>
+      <div className="grid gap-2.5" style={{ gridTemplateColumns: `repeat(${columns ?? options.length}, minmax(0, 1fr))` }}>
         {options.map((option) => {
           const checked = option.value === value;
           return (

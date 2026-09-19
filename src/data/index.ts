@@ -4,9 +4,9 @@ import { importedSources, importedVocabulary } from './vocabulary/imported';
 
 export type { Article, Level, VocabularyDataset, VocabularyItem, VocabularySource, WordType } from './types';
 
-export const LEVELS: readonly Level[] = ['A1', 'A2', 'B1'];
+export const LEVELS: readonly Level[] = ['A1', 'A2', 'B1', 'B2', 'C1'];
 
-export const LEVEL_HINTS: Record<Level, string> = { A1: 'Anfänger', A2: 'Grundlagen', B1: 'Mittelstufe' };
+export const LEVEL_HINTS: Record<Level, string> = { A1: 'Anfänger', A2: 'Grundlagen', B1: 'Mittelstufe', B2: 'Fortgeschritten', C1: 'Fachkundig' };
 
 export const WORD_TYPE_LABELS: Record<WordType, string> = {
   noun: 'Nomen',

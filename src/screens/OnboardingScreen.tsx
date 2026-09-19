@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Button } from '../components/Button';
 import { Decor } from '../components/Decor';
+import { InstallCard } from '../components/InstallCard';
 import { ArrowRightIcon, FlipIcon, RepeatIcon, SwipeIcon } from '../components/Icons';
 import { Window } from '../components/Window';
 import { LevelPicker } from '../components/LevelPicker';
@@ -46,7 +47,7 @@ export function OnboardingScreen({ onStart }: { onStart: (levels: Level[]) => vo
           nach dem anderen.
         </h1>
         <p className="mt-4 max-w-sm text-lg text-gray text-balance">
-          Karteikarten für den Wortschatz A1 bis B1. Ohne Konto, ohne Server, offline auf deinem Handy.
+          Karteikarten für den Wortschatz A1 bis C1. Ohne Konto, ohne Server, offline auf deinem Handy.
         </p>
       </div>
 
@@ -76,6 +77,8 @@ export function OnboardingScreen({ onStart }: { onStart: (levels: Level[]) => vo
           <ArrowRightIcon size={22} strokeWidth={3} />
         </Button>
       </form>
+
+      <InstallCard compact className="relative mt-6" />
     </div>
   );
 }

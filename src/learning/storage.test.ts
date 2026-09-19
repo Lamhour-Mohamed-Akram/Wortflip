@@ -34,7 +34,7 @@ describe('storage', () => {
   it('drops invalid parts but keeps the valid ones', () => {
     const state = sanitizeState(
       {
-        settings: { levels: ['A2', 'C1'], sessionSize: 99, onboarded: true },
+        settings: { levels: ['A2', 'C2'], sessionSize: 99, onboarded: true },
         progress: {
           tisch: { status: 'learning', box: 1, dueAt: 5, lastReviewedAt: 4, correct: 1, incorrect: 0, streak: 1 },
           gehen: { status: 'weird', box: -1 },

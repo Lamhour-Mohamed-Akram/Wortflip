@@ -4,6 +4,7 @@ import { ActionButtons } from '../components/ActionButtons';
 import { Button } from '../components/Button';
 import { Chip } from '../components/Chip';
 import { EmptyState } from '../components/EmptyState';
+import { InstallCard } from '../components/InstallCard';
 import { CheckIcon, ClockIcon, FlameIcon, RepeatIcon, TrophyIcon } from '../components/Icons';
 import { ProgressBar } from '../components/ProgressBar';
 import { StatTile } from '../components/StatTile';
@@ -130,6 +131,7 @@ export function LearnScreen({ onNavigate }: { onNavigate: (tab: Tab) => void }) 
                 Fortschritt ansehen
               </Button>
             </div>
+            <InstallCard compact className="mt-4" />
           </Window>
         </div>
       </div>

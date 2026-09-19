@@ -1,6 +1,6 @@
 export type Article = 'der' | 'die' | 'das';
 
-export type Level = 'A1' | 'A2' | 'B1';
+export type Level = 'A1' | 'A2' | 'B1' | 'B2' | 'C1';
 
 export type WordType =
   | 'noun'

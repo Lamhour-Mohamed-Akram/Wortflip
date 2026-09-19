@@ -210,6 +210,29 @@ export const BadgeIcon = (p: IconProps) => (
   </Icon>
 );
 
+export const ShareIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M12 3v12" />
+    <path d="M8 7l4-4 4 4" />
+    <path d="M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8" />
+  </Icon>
+);
+
+export const PlusSquareIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="3" y="3" width="18" height="18" rx="4" />
+    <path d="M12 8v8" />
+    <path d="M8 12h8" />
+  </Icon>
+);
+
+export const PhoneIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="6" y="2" width="12" height="20" rx="3" />
+    <path d="M10 18h4" />
+  </Icon>
+);
+
 export const KeyboardIcon = (p: IconProps) => (
   <Icon {...p}>
     <rect x="2" y="6" width="20" height="12" rx="3" />

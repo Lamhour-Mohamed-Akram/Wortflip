@@ -1,5 +1,6 @@
 import { ChoiceGroup, type Choice } from '../components/ChoiceGroup';
 import { BadgeIcon, CodeIcon, ExternalLinkIcon, KeyboardIcon, WarningIcon } from '../components/Icons';
+import { InstallCard } from '../components/InstallCard';
 import { LevelPicker } from '../components/LevelPicker';
 import { ResetButton } from '../components/ResetButton';
 import { ScreenHeader } from '../components/ScreenHeader';
@@ -33,6 +34,8 @@ export function SettingsScreen() {
   return (
     <div className="px-5 pb-6 pt-5">
       <ScreenHeader eyebrow="Wortflip" title="Einstellungen" />
+
+      <InstallCard className="mb-4" />
 
       <Window title="Lernen">
         <LevelPicker
