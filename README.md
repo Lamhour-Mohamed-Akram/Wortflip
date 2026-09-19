@@ -207,4 +207,4 @@ For very large datasets a dynamic import (`import('./vocabulary/large')`) keeps 
 
 ## Licenses
 
-The code and the hand-written vocabulary are released under the [MIT License](LICENSE). The imported vocabulary in `src/data/vocabulary/imported.json` keeps the licenses of its sources (Wiktionary CC BY-SA 4.0, Tatoeba CC BY 2.0 FR), named on each card and in the LICENSE file. The bundled fonts Rubik and Space Mono are licensed under the SIL Open Font License 1.1 (see `src/assets/fonts/LICENSE.md`).
+The code and the hand-written vocabulary are released under the [MIT License](LICENSE). The imported vocabulary in `src/data/vocabulary/imported.json` keeps the licenses of its sources (Wiktionary CC BY-SA 4.0, Tatoeba CC BY 2.0 FR), named on each card and in [NOTICE.md](NOTICE.md). The bundled fonts Rubik and Space Mono are licensed under the SIL Open Font License 1.1 (see `src/assets/fonts/LICENSE.md`).
