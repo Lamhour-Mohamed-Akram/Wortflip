@@ -3,7 +3,7 @@
 Learn German vocabulary from A1 to B1 with swipeable flashcards. The interaction feels like a dating app; the purpose is memory.
 A static Progressive Web App: no account, no server, no requests to any API while you use it.
 
-**Live:** https://wortflip.netlify.app
+**Live:** https://wortflip.de
 
 **Made by** Mohamed Akram Lamhour: [GitHub](https://github.com/Lamhour-Mohamed-Akram) · [LinkedIn](https://www.linkedin.com/in/ak2lamhour/)
 
@@ -57,7 +57,7 @@ The build is a plain static site (`dist/`). There are no server routes; navigati
 | -------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | **Netlify**          | `netlify.toml` is included (build `npm run build`, publish `dist`). Link the repository and every push deploys.        |
 | **Cloudflare Pages** | Build command `npm run build`, output directory `dist`, Node 20 or newer.                                              |
-| **GitHub Pages**     | Possible with `BASE_PATH=/Wortflip/ npm run build` and your own Actions workflow; the live version runs on Netlify.    |
+| **GitHub Pages**     | Possible with `BASE_PATH=/Wortflip/ npm run build` and your own Actions workflow; the live version runs on Netlify at wortflip.de.    |
 
 **Sub-path hosting** (for example `https://name.github.io/Wortflip/`): set the base path at build time:
 
