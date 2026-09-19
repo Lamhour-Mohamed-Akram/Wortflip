@@ -1,187 +1,208 @@
 # Wortflip
 
-Deutsch-Wortschatz von A1 bis B1 mit wischbaren Karteikarten lernen, wie in einer Dating-App, nur für Wörter.
-Eine statische Progressive Web App ohne Konto, ohne Server und ohne externe Anfragen zur Laufzeit.
-
-- **Tippen** dreht die Karte um: Definition, Beispielsatz und Formen (Plural, Verbformen, Steigerung), alles auf einfachem Deutsch.
-- **Wischen** bewertet: rechts = „Kenne ich“, links = „Noch lernen“. Alternativ per Buttons oder Tastatur.
-- **Spaced Repetition** entscheidet, wann ein Wort wiederkommt (Leitner-Stufen: 1, 3, 7, 14, 30 Tage).
-- **2872 Wörter** in drei Levels: 472 handgeschriebene (A1 193, A2 147, B1 132) plus 2400 importierte aus Wiktionary und Tatoeba, ausgewählt nach den Goethe-Institut-Wortlisten (A1 410, A2 472, B1 1518). Levels lassen sich frei kombinieren.
-- **Wörterliste mit Suche**: alle Wörter nach Level und Wortart filtern, suchen (auch ohne Umlaute: „gefuhl“ findet „Gefühl“) und die Auswahl direkt lernen. Die Suche läuft komplett im Browser über die gebündelten Daten; es gibt keine Online-Abfrage und nichts, das auf Netlify-Limits zählt.
-- **Offline und installierbar**: App-Shell, Wortschatz und Schriften werden per Service Worker gecacht.
-- **Alles lokal**: Fortschritt, Serie und Statistiken liegen ausschließlich in `localStorage`.
-
-## Lokale Entwicklung
-
-Voraussetzung: Node.js 20 oder neuer.
-
-```bash
-npm install        # Abhängigkeiten installieren
-npm run dev        # Dev-Server mit Hot Reload (http://localhost:5173)
-npm run build      # Typprüfung + Produktions-Build nach dist/
-npm run preview    # Produktions-Build lokal testen (http://localhost:4173, inkl. Service Worker)
-npm test           # Unit-Tests für Scheduler, Session-Logik, Speicher und Datensatz
-npm run typecheck  # nur TypeScript
-npm run icons      # PWA-Icons und favicon.svg neu generieren (ohne Abhängigkeiten)
-```
-
-Der Service Worker ist nur im Produktions-Build aktiv (`npm run build && npm run preview`).
-
-## Deployment
-
-Der Build ist eine rein statische Seite (`dist/`). Es gibt keine Server-Routen; die Navigation läuft über den URL-Hash.
-
-| Plattform            | Einstellungen                                                                                                                        |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| **Cloudflare Pages** | Build command `npm run build`, Build output directory `dist`, Node-Version 20+.                                                     |
-| **Netlify**          | `netlify.toml` liegt bei (Build `npm run build`, Publish `dist`). Einfach das Repository verbinden.                                  |
-| **GitHub Pages**     | Möglich mit `BASE_PATH=/Wortflip/ npm run build` und einem eigenen Actions-Workflow; die Live-Version läuft auf Netlify.           |
-
-**Unterpfad (zum Beispiel GitHub Pages unter `https://name.github.io/wortflip/`)**: Der Basispfad wird beim Build gesetzt:
-
-```bash
-BASE_PATH=/wortflip/ npm run build
-```
-
-Manifest, Service Worker, Icons und Schriften werden dann relativ zu diesem Pfad ausgeliefert.
+Learn German vocabulary from A1 to B1 with swipeable flashcards. The interaction feels like a dating app; the purpose is memory.
+A static Progressive Web App: no account, no server, no requests to any API while you use it.
 
 **Live:** https://wortflip.netlify.app
 
-### PWA und neue Versionen
+- **Tap** to flip the card: definition, example sentence and forms (plural, verb forms, comparison), all in simple German.
+- **Swipe** to rate: right = "Kenne ich", left = "Noch lernen". Buttons and keyboard work too.
+- **Spaced repetition** decides when a word comes back (Leitner boxes: 1, 3, 7, 14, 30 days).
+- **2872 words** in three levels: 472 hand-written (A1 193, A2 147, B1 132) plus 2400 imported from Wiktionary and Tatoeba, selected with the Goethe-Institut word lists (A1 410, A2 472, B1 1518). Levels can be combined freely.
+- **Word list with search**: filter by level and word type, search even without umlauts ("gefuhl" finds "Gefühl"), and learn the current selection. Search runs entirely in the browser over the bundled data; nothing is looked up online and nothing counts against hosting limits.
+- **Offline and installable**: app shell, vocabulary and fonts are cached by a service worker.
+- **Everything local**: progress, streak and statistics live only in `localStorage`.
 
-`vite-plugin-pwa` erzeugt `manifest.webmanifest` und `sw.js` (Workbox, `generateSW`). Alle Assets (`js`, `css`, `html`, `svg`, `png`, `woff2`) werden vorab gecacht, darum funktioniert die App nach dem ersten Besuch komplett offline.
+## Screenshots
 
-Neue Versionen werden mit `registerType: 'prompt'` behandelt: Der neue Service Worker wird im Hintergrund installiert, aktiviert sich aber erst, wenn die Nutzerin auf **Aktualisieren** tippt (`src/pwa/ReloadPrompt.tsx`). So wird keine laufende Lernrunde durch einen überraschenden Reload unterbrochen. Alte Caches werden beim Aktivieren automatisch bereinigt (`cleanupOutdatedCaches`).
+<table>
+  <tr>
+    <td align="center"><img src="docs/screenshots/01-onboarding.png" width="190" alt="Onboarding"><br><sub>Onboarding</sub></td>
+    <td align="center"><img src="docs/screenshots/02-lernen-vorderseite.png" width="190" alt="Card front"><br><sub>Learn: card front</sub></td>
+    <td align="center"><img src="docs/screenshots/03-lernen-rueckseite.png" width="190" alt="Card back"><br><sub>Learn: card back</sub></td>
+    <td align="center"><img src="docs/screenshots/04-woerter.png" width="190" alt="Word list with search"><br><sub>Words: search and filters</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/05-fortschritt.png" width="190" alt="Progress"><br><sub>Progress</sub></td>
+    <td align="center"><img src="docs/screenshots/06-schwierig.png" width="190" alt="Difficult words"><br><sub>Difficult words</sub></td>
+    <td align="center"><img src="docs/screenshots/07-einstellungen.png" width="190" alt="Settings"><br><sub>Settings</sub></td>
+    <td align="center"><img src="docs/screenshots/08-desktop.png" width="190" alt="Desktop"><br><sub>Desktop frame</sub></td>
+  </tr>
+</table>
 
-Der gespeicherte Zustand trägt eine `version`. Beim Laden wird jeder Teil validiert (`src/learning/storage.ts`): Ungültige oder beschädigte Einträge werden einzeln durch Standardwerte ersetzt, statt die App zum Absturz zu bringen. Spätere Schema-Änderungen bekommen dort eine Migration.
+## Local development
 
-## Projektstruktur
+Requires Node.js 20 or newer.
+
+```bash
+npm install        # install dependencies
+npm run dev        # dev server with hot reload (http://localhost:5173)
+npm run build      # type check + production build into dist/
+npm run preview    # serve the production build locally (http://localhost:4173, with service worker)
+npm test           # unit tests: scheduler, session logic, storage, dataset, importer parser
+npm run typecheck  # TypeScript only
+npm run icons      # regenerate the PWA icons and favicon.svg (no dependencies)
+npm run import     # vocabulary importer, see below
+```
+
+The service worker is only active in the production build (`npm run build && npm run preview`).
+
+## Deployment
+
+The build is a plain static site (`dist/`). There are no server routes; navigation uses the URL hash.
+
+| Platform             | Settings                                                                                                              |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| **Netlify**          | `netlify.toml` is included (build `npm run build`, publish `dist`). Link the repository and every push deploys.        |
+| **Cloudflare Pages** | Build command `npm run build`, output directory `dist`, Node 20 or newer.                                              |
+| **GitHub Pages**     | Possible with `BASE_PATH=/Wortflip/ npm run build` and your own Actions workflow; the live version runs on Netlify.    |
+
+**Sub-path hosting** (for example `https://name.github.io/Wortflip/`): set the base path at build time:
+
+```bash
+BASE_PATH=/Wortflip/ npm run build
+```
+
+Manifest, service worker, icons and fonts are then served relative to that path.
+
+### PWA and new versions
+
+`vite-plugin-pwa` generates `manifest.webmanifest` and `sw.js` (Workbox, `generateSW`). All assets (`js`, `css`, `html`, `svg`, `png`, `woff2`) are precached, so the app works fully offline after the first visit.
+
+New versions use `registerType: 'prompt'`: the new service worker is installed in the background but only activated when the user taps **Aktualisieren** (`src/pwa/ReloadPrompt.tsx`), so a running learning session is never interrupted by a surprise reload. Old caches are cleaned up on activation (`cleanupOutdatedCaches`).
+
+The stored state carries a `version`. On load every part is validated (`src/learning/storage.ts`): invalid or corrupted pieces are replaced by defaults one by one instead of crashing the app. Future schema changes get a migration there.
+
+## Project structure
 
 ```
-├── index.html                 Einstieg, Meta-Tags, Manifest-Verknüpfung
-├── vite.config.ts             Vite, Tailwind, PWA (Manifest + Workbox), Vitest
-├── scripts/generate-icons.mjs Erzeugt public/icons/*.png und favicon.svg ohne Abhängigkeiten
-├── scripts/import-vocabulary.mjs  Import aus Wiktionary + Tatoeba (Parser in scripts/import/, mit Tests)
-├── public/                    Icons, favicon.svg
+├── index.html                     entry point, meta tags, manifest link
+├── vite.config.ts                 Vite, Tailwind, PWA (manifest + Workbox), Vitest
+├── netlify.toml                   Netlify build settings
+├── scripts/generate-icons.mjs     builds public/icons/*.png and favicon.svg without dependencies
+├── scripts/import-vocabulary.mjs  importer for Wiktionary + Tatoeba (parser in scripts/import/, with tests)
+├── docs/screenshots/              the images used in this README
+├── public/                        icons, favicon.svg
 └── src/
-    ├── data/                  Datenschicht (unabhängig von der UI)
-    │   ├── types.ts           VocabularyItem, VocabularyDataset, VocabularySource
-    │   ├── vocabulary/        Wortschatz: a1.ts, a2.ts, b1.ts (handgeschrieben), imported.json (generiert) + imported.ts (Wrapper)
-    │   └── index.ts           dataset, Hilfsfunktionen (headword, pluralForm, itemsForLevels, validateDataset)
-    ├── learning/              Lernlogik, reine Funktionen ohne React
-    │   ├── scheduler.ts       Spaced Repetition (Stufen, Intervalle, „gemeistert“)
-    │   ├── session.ts         Rundenaufbau, Warteschlange, Wiedereinreihen nach links-Wisch
-    │   ├── streak.ts          Tägliche Serie
-    │   ├── stats.ts           Trefferquote, Antworten pro Tag
-    │   ├── storage.ts         localStorage-Zugriff mit Validierung und Standardwerten
-    │   ├── time.ts            Kalendertag-Helfer (DST-sicher)
-    │   └── *.test.ts          Unit-Tests (Vitest)
-    ├── state/                 App-Zustand: Reducer + React-Context, speichert bei jeder Änderung
-    ├── hooks/                 useTab (Hash-Routing), useReducedMotion
-    ├── components/            Wiederverwendbare UI: Button, Chip, Window, StatTile, ProgressBar,
-    │                          Flashcard (Vorder-/Rückseite), SwipeableCard (Gesten + Flip),
-    │                          ActionButtons, BottomNav, ConfirmDialog, LevelPicker, ResetButton, WordRow, ...
-    ├── screens/               Onboarding, Lernen, Wörter (Liste + Suche), Fortschritt, Schwierig, Einstellungen
-    ├── pwa/ReloadPrompt.tsx   Hinweis auf neue Version / Offline-Bereitschaft
-    ├── lib/                   cn(), Formatierungshelfer
-    ├── assets/fonts/          Rubik + Space Mono (SIL OFL), lokal gebündelt
-    └── index.css              Tailwind-Theme (Design-Tokens), Flip-Animation, Muster
+    ├── data/                      data layer (independent of the UI)
+    │   ├── types.ts               VocabularyItem, VocabularyDataset, VocabularySource
+    │   ├── vocabulary/            a1.ts, a2.ts, b1.ts (hand-written), imported.json (generated) + imported.ts (typed wrapper)
+    │   └── index.ts               dataset, helpers (headword, pluralForm, itemsForLevels, validateDataset)
+    ├── learning/                  learning logic, pure functions without React
+    │   ├── scheduler.ts           spaced repetition (boxes, intervals, "mastered")
+    │   ├── session.ts             round building, queue, re-queueing after a left swipe
+    │   ├── streak.ts              daily streak
+    │   ├── stats.ts               accuracy, reviews per day
+    │   ├── storage.ts             localStorage access with validation and defaults
+    │   ├── time.ts                calendar-day helpers (DST safe)
+    │   └── *.test.ts              unit tests (Vitest)
+    ├── state/                     app state: reducer + React context, saved on every change
+    ├── hooks/                     useTab (hash routing), useReducedMotion
+    ├── components/                reusable UI: Button, Chip, Window, StatTile, ProgressBar,
+    │                              Flashcard (front/back), SwipeableCard (gestures + flip),
+    │                              ActionButtons, BottomNav, ConfirmDialog, LevelPicker, ResetButton, WordRow, ...
+    ├── screens/                   Onboarding, Learn, Words (list + search), Progress, Difficult, Settings
+    ├── pwa/ReloadPrompt.tsx       new-version and offline-ready notices
+    ├── lib/                       cn(), formatting and search helpers
+    ├── assets/fonts/              Rubik + Space Mono (SIL OFL), bundled locally
+    └── index.css                  Tailwind theme (design tokens), flip animation, patterns
 ```
 
-Die Trennung ist bewusst strikt: `src/data` und `src/learning` importieren nichts aus `src/components` oder `src/screens`. Die Screens lesen den Zustand über `useApp()` und lösen Aktionen aus; die Regeln stecken im Reducer und in `src/learning`.
+The separation is deliberate: `src/data` and `src/learning` import nothing from `src/components` or `src/screens`. Screens read state through `useApp()` and dispatch actions; the rules live in the reducer and in `src/learning`.
 
-## Spaced Repetition
+## Spaced repetition
 
-Jedes Wort hat einen Lernstand (`WordProgress`) mit einer **Stufe** (`box`), einem Fälligkeitsdatum (`dueAt`) und Zählern.
+Every word has a learning record (`WordProgress`) with a **box**, a due date (`dueAt`) and counters.
 
-| Ereignis                                   | Wirkung                                                                                          |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------ |
-| Wort noch nie gesehen                      | Status `new`, kein Eintrag im Speicher.                                                          |
-| „Kenne ich“ auf Stufe *n*                  | Stufe *n + 1*; fällig nach 1, 3, 7, 14 oder 30 Tagen. Status `learning`.                         |
-| „Kenne ich“ auf der letzten Stufe          | Status `mastered`; das Wort kommt weiterhin alle 30 Tage.                                        |
-| „Noch lernen“                              | Zurück auf Stufe 0, sofort fällig, `incorrect + 1`, Serie des Wortes auf 0. Status `learning`.  |
-| „Kenne ich“, obwohl noch nicht fällig      | Zählt als richtige Antwort, verändert aber Stufe und Fälligkeit **nicht** (Extra-Runde).          |
+| Event                                     | Effect                                                                                              |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Word never seen                           | Status `new`, no stored record.                                                                     |
+| "Kenne ich" in box *n*                    | Box *n + 1*; due after 1, 3, 7, 14 or 30 days. Status `learning`.                                   |
+| "Kenne ich" in the last box               | Status `mastered`; the word keeps coming back every 30 days.                                        |
+| "Noch lernen"                             | Back to box 0, due immediately, `incorrect + 1`, the word's streak resets. Status `learning`.        |
+| "Kenne ich" before the word is due        | Counts as a correct answer but does **not** change box or due date (extra round).                   |
 
-Innerhalb einer Runde:
+Inside a round:
 
-- Eine Runde besteht aus fälligen Wörtern (zuerst) und neuen Wörtern (gemischt), begrenzt durch die Rundengröße (10, 20 oder 30).
-- Fällige Wörter werden nach Schwierigkeit und Überfälligkeit sortiert. Ab **3** „Noch lernen“-Antworten gilt ein Wort als **schwierig**.
-- Ein nach links gewischtes Wort wird **5 Karten später** wieder eingereiht, ein schwieriges Wort schon nach **3** Karten. Solange andere Karten übrig sind, erscheint dasselbe Wort nie zweimal direkt hintereinander.
-- Die Runde ist beendet, wenn jede Karte einmal mit „Kenne ich“ beantwortet wurde.
-- Ist nichts fällig und nichts neu, bietet die App eine **Extra-Runde** mit den nächsten fälligen Wörtern an. Der Schwierig-Screen startet eine **Fokus-Runde** mit den meistverfehlten Wörtern.
+- A round consists of due words (first) and new words (shuffled), limited by the round size (10, 20 or 30).
+- Due words are sorted by difficulty and how overdue they are. From **3** "Noch lernen" answers on, a word counts as **difficult**.
+- A word swiped left is re-queued **5 cards later**, a difficult word after **3** cards. While other cards remain, the same word never appears twice in a row.
+- The round ends when every card has been answered with "Kenne ich" once.
+- If nothing is due and nothing is new, the app offers an **extra round** with the words that become due soonest. The Difficult screen starts a **focus round** with the most-missed words, and the Words screen starts a round from any filtered selection.
 
-Die **Serie** zählt Kalendertage mit mindestens einer Antwort; ein ausgelassener Tag setzt sie auf 0 (die beste Serie bleibt gespeichert).
+The **streak** counts calendar days with at least one answer; a skipped day resets it to 0 (the best streak is kept).
 
-## Neustart und Zurücksetzen
+## Restart and reset
 
-- **Runde neu starten** (Symbol oben rechts im Lern-Screen): Die aktuelle Runde wird verworfen und neu zusammengestellt. Bereits gegebene Antworten bleiben gespeichert.
-- **Fortschritt zurücksetzen** (Einstellungen und Fortschritt-Screen): Lernstand, Serie und Statistiken werden gelöscht. Level und Rundengröße bleiben.
-- **Alles löschen und neu starten** (Einstellungen und Fortschritt-Screen): Alles wird gelöscht, die App beginnt wieder beim Onboarding.
+- **Runde neu starten** (icon at the top right of the Learn screen): the current round is discarded and rebuilt. Answers already given stay saved.
+- **Fortschritt zurücksetzen** (Settings and Progress screens): learning records, streak and statistics are deleted. Level and round size stay.
+- **Alles löschen und neu starten** (Settings and Progress screens): everything is deleted and the app starts again at the onboarding.
 
-Jede dieser Aktionen fragt vorher nach einer Bestätigung.
+Each of these asks for confirmation first.
 
-## Wortschatz erweitern
+## Vocabulary
 
-Der Wortschatz liegt in `src/data/vocabulary/` als typisierte Arrays, eine Datei pro Level. Ein größerer, kuratierter Datensatz kann diese Dateien ersetzen oder ergänzen; die Oberfläche kennt nur `dataset` aus `src/data/index.ts`.
+The vocabulary lives in `src/data/vocabulary/` as typed arrays, one file per level, plus the generated `imported.json`. The UI only knows `dataset` from `src/data/index.ts`.
 
 ```ts
 type VocabularyItem = {
-  id: string;                      // stabil: der Lernstand wird unter dieser id gespeichert
+  id: string;                      // stable: progress is stored under this id
   word: string;                    // "Tisch", "gehen", "sich erinnern"
-  article?: 'der' | 'die' | 'das'; // nur Nomen
-  plural?: string;                 // ohne Artikel; weglassen bei Singularwörtern
+  article?: 'der' | 'die' | 'das'; // nouns only
+  plural?: string;                 // without article; omitted for singular-only nouns
   type: 'noun' | 'verb' | 'adjective' | 'adverb' | 'preposition' | 'conjunction' | 'other';
   level: 'A1' | 'A2' | 'B1';
   definitionDe: string;
   exampleDe: string;
   verbForms?: { thirdPersonPresent?: string; preterite?: string; participleII?: string };
   adjectiveForms?: { comparative?: string; superlative?: string };
-  sourceIds?: string[];            // verweist auf dataset.sources[].id
+  sourceIds?: string[];            // refers to dataset.sources[].id
+  definitionUrl?: string;          // where definition and forms come from
+  exampleSource?: { sourceId: string; author?: string; url?: string };
 };
 ```
 
-**Quellenangaben:** `dataset.origin` und `dataset.sources` werden im Einstellungs-Screen unter „Datenquellen“ angezeigt. Der mitgelieferte Datensatz ist handgeschrieben und nennt darum keine Quelle. Wer Einträge aus dem [Deutschen Wiktionary](https://de.wiktionary.org) (CC BY-SA 4.0) oder [Tatoeba](https://tatoeba.org) (CC BY 2.0 FR, Autor pro Satz nennen) importiert, trägt die Quelle in `dataset.sources` ein und verweist pro Eintrag über `sourceIds` darauf. `validateDataset()` prüft Duplikate, fehlende Artikel und unbekannte Quellen (`npm test`).
+**Attribution:** `dataset.origin` and `dataset.sources` are shown in the Settings screen under "Datenquellen", and every imported card names its sources on the back. `validateDataset()` checks for duplicates, missing articles and unknown sources (`npm test`).
 
-### Import aus Wiktionary und Tatoeba
+### Importing from Wiktionary and Tatoeba
 
-`npm run import` holt Wörter aus zwei freien Quellen und schreibt sie nach `src/data/vocabulary/imported.json` (die Datei `imported.ts` daneben ist nur ein typisierter Wrapper):
+`npm run import` fetches words from two free sources and writes them to `src/data/vocabulary/imported.json` (`imported.ts` next to it is only a typed wrapper):
 
-- **Deutsches Wiktionary** (MediaWiki-API): Artikel, Plural, Verbformen, Komparativ/Superlativ und die erste Bedeutung. Lizenz CC BY-SA 4.0.
-- **Tatoeba** (API): ein kurzer Beispielsatz pro Wort mit Autor. Lizenz CC BY 2.0 FR, der Autor steht auf jeder Karte.
+- **German Wiktionary** (MediaWiki API): article, plural, verb forms, comparative and superlative, and the first definition. License CC BY-SA 4.0.
+- **Tatoeba** (API): one short example sentence per word with its author. License CC BY 2.0 FR; the author is shown on every card.
 
 ```bash
-npm run import -- --list scripts/import/wordlist-test.txt        # eigene Liste: ein Wort pro Zeile, optional mit Level
-npm run import -- --frequency 2000 --a1 500 --a2 1200             # die 2000 häufigsten Wörter, Level nach Häufigkeit
-npm run import -- --list liste.txt --merge --override-level       # zu den vorhandenen Importen hinzufügen, Level aus der Liste
-npm run import -- --frequency 300 --no-sentences --dry-run        # nur anzeigen, nichts schreiben
-IMPORT_CONTACT="deine@mail.de" npm run import -- --list ...       # Kontakt für den User-Agent (Wikimedia bittet darum)
+npm run import -- --list scripts/import/wordlist-test.txt        # your own list: one word per line, optional level
+npm run import -- --frequency 2000 --a1 500 --a2 1200             # the 2000 most frequent words, levels by frequency
+npm run import -- --list list.txt --merge --override-level       # add to the existing import, levels from the list win
+npm run import -- --frequency 300 --no-sentences --dry-run        # show only, write nothing
+IMPORT_CONTACT="you@example.com" npm run import -- --list ...    # contact for the User-Agent (Wikimedia asks for it)
 ```
 
-**Wortlisten mit offiziellen Levels:** Die Goethe-Institut-Wortlisten (A1, A2, B1) eignen sich als Auswahl, welche Wörter zu welchem Level gehören. `scripts/import/goethe-to-wordlist.mjs` macht aus solchen Listen (CSV oder TSV, erste Spalte das Stichwort) eine Importliste, in der jedes Wort einmal mit seinem niedrigsten Level steht. Nur die Stichwörter werden verwendet; Beispielsätze, Übersetzungen und Audio aus diesen Listen sind urheberrechtlich geschützt und werden nie kopiert. Die Listen selbst gehören nicht ins Repository (sie liegen unter `scripts/.cache/`).
+The script runs only on your machine, never in the app and never in the Netlify build. It requests slowly (Tatoeba: one request per second; Wiktionary: 30 pages every three seconds), waits as long as the server demands on a 429 answer, caches every response in `scripts/.cache/` (further runs are almost free) and skips words that already exist in the hand-written files. A run with 3000 words takes about 35 minutes.
+
+**Word lists with official levels:** the Goethe-Institut word lists (A1, A2, B1) are a good source for which words belong to which level. `scripts/import/goethe-to-wordlist.mjs` turns such lists (CSV or TSV whose first column is the headword) into an import list where every word appears once with its lowest level. Only the headwords are used; example sentences, translations and audio from those lists are copyrighted and are never copied. The lists themselves do not belong in the repository (they live in `scripts/.cache/`).
 
 ```bash
 node scripts/import/goethe-to-wordlist.mjs --out scripts/.cache/goethe.txt --in a1/*.tsv A1 --in a2/*.tsv A2 --in b1.csv B1
 npm run import -- --list scripts/.cache/goethe.txt --merge --override-level
 ```
 
-Das Skript läuft nur auf deinem Rechner, nie in der App und nie im Netlify-Build. Es fragt langsam an (Tatoeba: eine Anfrage pro Sekunde; Wiktionary: 30 Seiten alle drei Sekunden), wartet bei einer 429-Antwort so lange, wie der Server es verlangt, speichert alle Antworten in `scripts/.cache/` (weitere Läufe sind dadurch fast kostenlos) und überspringt Wörter, die es schon in den handgeschriebenen Dateien gibt. Ein Lauf mit 3000 Wörtern dauert etwa 35 Minuten. Im Häufigkeitsmodus werden gebeugte Formen („geht“, „Tische“) über Wiktionary auf ihre Grundform zurückgeführt; die Rangliste stammt aus dem frei verfügbaren Projekt FrequencyWords (OpenSubtitles) und dient nur zum Sortieren.
+What the import can and cannot do:
 
-Was der Import kann und was nicht:
+- Forms are reliable, example sentences are mostly short and natural.
+- Wiktionary definitions are written for adults, not in simple learner German, and the first sense is not always the everyday one (for "Bahn" the physics meaning comes before the railway). To improve an imported card, write the word into one of the level files; the next import skips it.
+- The shipped import (2400 entries) was produced with the Goethe lists as the selection; words that already exist hand-written were skipped. A frequency mode (`--frequency`) exists too, but it occasionally yields rare base forms (such as "wassern" instead of "Wasser") and is therefore not used for the shipped dataset.
 
-- Formen sind zuverlässig, Beispielsätze meist kurz und natürlich.
-- Wiktionary-Definitionen sind für Erwachsene geschrieben, nicht in einfachem Lernerdeutsch, und die erste Bedeutung ist nicht immer die Alltagsbedeutung (bei „Bahn“ steht zum Beispiel die physikalische Bahn vor der Eisenbahn). Wer eine importierte Karte verbessern will, schreibt das Wort in eine der Level-Dateien; beim nächsten Import wird es dann übersprungen.
-- Die Einstellungen zeigen unter „Datenquellen“ automatisch, welche Quellen verwendet werden, und jede importierte Karte nennt ihre Quelle.
-- Der mitgelieferte Import (2400 Einträge) wurde mit den Goethe-Listen als Auswahl erzeugt; Wörter, die es schon handgeschrieben gibt, wurden übersprungen. Ein Häufigkeitsmodus (`--frequency`) existiert ebenfalls, liefert aber gelegentlich seltene Grundformen (etwa „wassern“ statt „Wasser“) und wird darum nicht für den ausgelieferten Datensatz verwendet.
+For very large datasets a dynamic import (`import('./vocabulary/large')`) keeps the data in its own, still precached chunk.
 
-Bei sehr großen Datensätzen empfiehlt sich ein dynamischer Import (`import('./vocabulary/large')`), damit die Daten als eigener, weiterhin vorab gecachter Chunk geladen werden.
+## Controls and accessibility
 
-## Bedienung und Barrierefreiheit
+- **Keyboard:** `Space`/`Enter` flips the card, `←` = "Noch lernen", `→` = "Kenne ich". Every control is reachable by Tab and has a visible focus outline.
+- **Gestures:** pointer events, so touch and mouse behave the same. While the flip animation runs, and before the card was flipped, swiping is blocked (the card only nudges and hints at flipping first).
+- **Motion:** `prefers-reduced-motion` disables flip, swipe and entrance animations.
+- **Color:** meaning is never carried by color alone; stamps, buttons and legends always have text and/or an icon. Black on yellow and white has contrast well above AA.
 
-- **Tastatur:** `Leertaste`/`Enter` dreht die Karte um, `←` = „Noch lernen“, `→` = „Kenne ich“. Alle Bedienelemente sind per Tab erreichbar und haben sichtbare Fokusrahmen.
-- **Gesten:** Pointer Events, daher identisches Verhalten bei Touch und Maus. Während der Flip-Animation und vor dem Umdrehen ist Wischen gesperrt (die Karte „federt“ nur leicht und weist auf das Umdrehen hin).
-- **Bewegung:** `prefers-reduced-motion` schaltet Flip-, Wisch- und Einblendanimationen ab.
-- **Farben:** Bedeutungen werden nie nur über Farbe vermittelt; Stempel, Buttons und Legenden tragen immer Text und/oder Symbol. Der Kontrast von Schwarz auf Gelb und Weiß liegt weit über AA.
+## Licenses
 
-## Lizenzen
-
-Die gebündelten Schriften Rubik und Space Mono stehen unter der SIL Open Font License 1.1 (siehe `src/assets/fonts/LICENSE.md`).
+The bundled fonts Rubik and Space Mono are licensed under the SIL Open Font License 1.1 (see `src/assets/fonts/LICENSE.md`). Imported vocabulary entries carry the licenses of their sources (Wiktionary CC BY-SA 4.0, Tatoeba CC BY 2.0 FR), named on each card.
