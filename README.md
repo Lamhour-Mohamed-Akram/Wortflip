@@ -1,6 +1,6 @@
 # Wortflip
 
-Learn German vocabulary from A1 to B1 with swipeable flashcards. The interaction feels like a dating app; the purpose is memory.
+Learn German vocabulary from A1 to C1 with swipeable flashcards. The interaction feels like a dating app; the purpose is memory.
 A static Progressive Web App: no account, no server, no requests to any API while you use it.
 
 **Live:** https://wortflip.de
@@ -10,9 +10,10 @@ A static Progressive Web App: no account, no server, no requests to any API whil
 - **Tap** to flip the card: definition, example sentence and forms (plural, verb forms, comparison), all in simple German.
 - **Swipe** to rate: right = "Kenne ich", left = "Noch lernen". Buttons and keyboard work too.
 - **Spaced repetition** decides when a word comes back (Leitner boxes: 1, 3, 7, 14, 30 days).
-- **2872 words** in three levels: 472 hand-written (A1 193, A2 147, B1 132) plus 2400 imported from Wiktionary and Tatoeba, selected with the Goethe-Institut word lists (A1 410, A2 472, B1 1518). Levels can be combined freely.
+- **4596 words** in five levels: 627 hand-written (A1 193, A2 147, B1 144, B2 71, C1 72) plus 3969 imported from Wiktionary and Tatoeba. The A1 to B1 imports were selected with the Goethe-Institut word lists (A1 410, A2 472, B1 1506); the B2 and C1 imports (775 and 806) were selected by word frequency, so those two levels are approximate. Levels can be combined freely.
 - **Word list with search**: filter by level and word type, search even without umlauts ("gefuhl" finds "Gefühl"), and learn the current selection. Search runs entirely in the browser over the bundled data; nothing is looked up online and nothing counts against hosting limits.
 - **Offline and installable**: app shell, vocabulary and fonts are cached by a service worker.
+- **Add to home screen**: an install card triggers the native install prompt where the browser supports it (Android, Chrome and Edge on desktop) and shows step-by-step instructions on iPhone and iPad, matched to the browser in use (Safari, Chrome, Edge, Firefox).
 - **Everything local**: progress, streak and statistics live only in `localStorage`.
 
 ## Screenshots
@@ -69,7 +70,7 @@ Manifest, service worker, icons and fonts are then served relative to that path.
 
 ### PWA and new versions
 
-`vite-plugin-pwa` generates `manifest.webmanifest` and `sw.js` (Workbox, `generateSW`). All assets (`js`, `css`, `html`, `svg`, `png`, `woff2`) are precached, so the app works fully offline after the first visit.
+`vite-plugin-pwa` generates `manifest.webmanifest` and `sw.js` (Workbox, `generateSW`). All assets (`js`, `css`, `html`, `svg`, `png`, `woff2`) are precached, so the app works fully offline after the first visit. The vocabulary is bundled as its own chunk (`vocabulary-*.js`), so a code update does not re-download the data and a data update does not re-download the code.
 
 New versions use `registerType: 'prompt'`: the new service worker is installed in the background but only activated when the user taps **Aktualisieren** (`src/pwa/ReloadPrompt.tsx`), so a running learning session is never interrupted by a surprise reload. Old caches are cleaned up on activation (`cleanupOutdatedCaches`).
 
@@ -176,6 +177,7 @@ type VocabularyItem = {
 ```bash
 npm run import -- --list scripts/import/wordlist-test.txt        # your own list: one word per line, optional level
 npm run import -- --frequency 2000 --a1 500 --a2 1200             # the 2000 most frequent words, levels by frequency
+npm run import -- --frequency 12000 --min-rank 3000 --b1 3000 --b2 5500 --strict --merge --limit 1600   # B2 and C1 by frequency
 npm run import -- --list list.txt --merge --override-level       # add to the existing import, levels from the list win
 npm run import -- --frequency 300 --no-sentences --dry-run        # show only, write nothing
 IMPORT_CONTACT="you@example.com" npm run import -- --list ...    # contact for the User-Agent (Wikimedia asks for it)
@@ -194,7 +196,8 @@ What the import can and cannot do:
 
 - Forms are reliable, example sentences are mostly short and natural.
 - Wiktionary definitions are written for adults, not in simple learner German, and the first sense is not always the everyday one (for "Bahn" the physics meaning comes before the railway). To improve an imported card, write the word into one of the level files; the next import skips it.
-- The shipped import (2400 entries) was produced with the Goethe lists as the selection; words that already exist hand-written were skipped. A frequency mode (`--frequency`) exists too, but it occasionally yields rare base forms (such as "wassern" instead of "Wasser") and is therefore not used for the shipped dataset.
+- The shipped import (3969 entries) combines two runs. First the Goethe lists as the selection for A1 to B1 (2388 entries); words that already exist hand-written were skipped. Then the frequency mode for B2 and C1 (1581 entries): ranks 3000 to about 7700 of the German 50k list from the [FrequencyWords](https://github.com/hermitdave/FrequencyWords) project (derived from OpenSubtitles), split at rank 5500. Only the ranks are used for the selection; nothing from that list is copied into the dataset.
+- The plain frequency mode occasionally yields rare base forms (such as "wassern" instead of "Wasser"). `--strict` therefore only accepts words whose base form is itself frequent and at least four letters long, and skips interjections, entries whose Wiktionary definition marks them as vulgar or derogatory, and stub definitions. Frequency is only a rough proxy for CEFR levels, so the B2 and C1 assignments are approximate; move a word into a hand-written level file to fix it.
 
 For very large datasets a dynamic import (`import('./vocabulary/large')`) keeps the data in its own, still precached chunk.
 

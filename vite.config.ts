@@ -19,6 +19,18 @@ export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
   },
+  build: {
+    // The imported vocabulary gets its own chunk: the app shell stays small,
+    // and a data update does not force a re-download of the code (and vice versa).
+    rollupOptions: {
+      output: {
+        advancedChunks: {
+          groups: [{ name: 'vocabulary', test: /imported\.json$/ }],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 2000,
+  },
   plugins: [
     react(),
     tailwindcss(),
@@ -53,6 +65,8 @@ export default defineConfig({
         // The app shell, the bundled vocabulary and the fonts are all precached,
         // so the app works fully offline after the first visit.
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        // The vocabulary chunk is above Workbox's default 2 MiB precache limit.
+        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         cleanupOutdatedCaches: true,
       },
     }),

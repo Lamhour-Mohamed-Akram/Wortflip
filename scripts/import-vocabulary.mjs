@@ -10,7 +10,8 @@
  *   node scripts/import-vocabulary.mjs --list scripts/import/wordlist.txt [--level A1]
  *   node scripts/import-vocabulary.mjs --frequency 2000 [--a1 500] [--a2 1200] [--b1 3000] [--b2 7000] [--limit 1500]
  *   (rank thresholds: below a1 -> A1, below a2 -> A2, below b1 -> B1, below b2 -> B2, else C1;
- *    --min-rank N skips the N most frequent tokens; --strict drops words reached through an inflected form)
+ *    --min-rank N skips the N most frequent tokens; --strict drops words reached through an inflected form,
+ *    interjections, entries marked as vulgar or derogatory, and one-word stub definitions)
  *   Options: --merge (keep the entries already in imported.json and add new ones)
  *            --override-level (with --merge: the list's level wins for words already imported)
  *            --no-sentences  --dry-run  --out <file>  --help
@@ -84,6 +85,18 @@ function printHelp() {
       .join('\n')
       .trim(),
   );
+}
+
+// Frequency lists are full of interjections, slurs and one-word stub
+// definitions. Strict mode skips them so the flashcards stay useful.
+const OFFENSIVE =
+  /\b(derb|vulgär|abwertend|Schimpfwort|Geschlechtsorgan|Geschlechtsverkehr|obszön|Fäkalsprache|Prostituierte[rn]?)\b/i;
+function lowValueReason(info) {
+  if (info.type === 'other') return 'interjection';
+  if (OFFENSIVE.test(info.definitionDe)) return 'offensive';
+  const definition = info.definitionDe;
+  if (definition.length < 14 || /\d\.$/.test(definition) || /^Ohne Plural/i.test(definition)) return 'stub';
+  return null;
 }
 
 function parseArgs(argv) {
@@ -347,7 +360,7 @@ async function main() {
   const tatoebaCache = loadCache('tatoeba');
   const existing = handWrittenKeys();
   const previous = args.merge ? readImported(args.out) : [];
-  const report = { requested: 0, missingPage: 0, unsupported: 0, duplicate: 0, noSentence: 0, imported: 0, kept: previous.length, relevelled: 0 };
+  const report = { requested: 0, missingPage: 0, unsupported: 0, duplicate: 0, noSentence: 0, filtered: 0, imported: 0, kept: previous.length, relevelled: 0 };
 
   // 1) Titles to look up, with rank and level.
   let candidates;
@@ -409,6 +422,10 @@ async function main() {
       else report.unsupported += 1;
       continue;
     }
+    if (args.strict && lowValueReason(found)) {
+      report.filtered += 1;
+      continue;
+    }
     const wordKey = `${found.word.toLowerCase()}|${found.type}`;
     let id = slugify(found.word);
     if (seen.has(id)) id = `${id}-${TYPE_LABEL[found.type]}`;
@@ -444,6 +461,10 @@ async function main() {
     if (!exampleDe && item.wiktionaryExample) exampleDe = item.wiktionaryExample;
     if (!exampleDe) {
       report.noSentence += 1;
+      continue;
+    }
+    if (args.strict && OFFENSIVE.test(exampleDe)) {
+      report.filtered += 1;
       continue;
     }
     const entry = {
