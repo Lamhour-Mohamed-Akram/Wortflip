@@ -1,5 +1,5 @@
 import { ChoiceGroup, type Choice } from '../components/ChoiceGroup';
-import { ExternalLinkIcon, KeyboardIcon, WarningIcon } from '../components/Icons';
+import { BadgeIcon, CodeIcon, ExternalLinkIcon, KeyboardIcon, WarningIcon } from '../components/Icons';
 import { LevelPicker } from '../components/LevelPicker';
 import { ResetButton } from '../components/ResetButton';
 import { ScreenHeader } from '../components/ScreenHeader';
@@ -9,6 +9,7 @@ import { SESSION_SIZES } from '../learning/storage';
 import type { SessionSize } from '../learning/types';
 import { pluralize } from '../lib/format';
 import { useApp } from '../state/AppContext';
+import { AUTHOR } from '../author';
 
 const SIZE_CHOICES: readonly Choice<SessionSize>[] = SESSION_SIZES.map((size) => ({
   value: size,
@@ -112,6 +113,31 @@ export function SettingsScreen() {
         <p className="text-sm leading-snug">
           Wortflip {__APP_VERSION__} · Karteikarten für deutschen Wortschatz. Einsprachig: Alle Erklärungen sind auf einfachem Deutsch.
         </p>
+        <div className="mt-4 rounded-xl border-2 border-black bg-yellow-light p-3">
+          <p className="font-mono text-[11px] font-bold uppercase tracking-wider text-gray">Gemacht von</p>
+          <p className="mt-0.5 text-lg font-black leading-tight">{AUTHOR.name}</p>
+          <p className="text-xs text-gray">{AUTHOR.role}</p>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <a
+              href={AUTHOR.github}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border-2 border-black bg-white font-bold shadow-hard-xs transition-colors hover:bg-yellow"
+            >
+              <CodeIcon size={18} />
+              GitHub
+            </a>
+            <a
+              href={AUTHOR.linkedin}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border-2 border-black bg-white font-bold shadow-hard-xs transition-colors hover:bg-yellow"
+            >
+              <BadgeIcon size={18} />
+              LinkedIn
+            </a>
+          </div>
+        </div>
         <h4 className="mt-4 flex items-center gap-1.5 font-mono text-[11px] font-bold uppercase tracking-wider text-gray">
           <KeyboardIcon size={16} /> Tastatur
         </h4>

@@ -192,6 +192,24 @@ export const SearchIcon = (p: IconProps) => (
   </Icon>
 );
 
+export const CodeIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M8 7l-5 5 5 5" />
+    <path d="M16 7l5 5-5 5" />
+    <path d="M14 4l-4 16" />
+  </Icon>
+);
+
+export const BadgeIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="3" y="4" width="18" height="16" rx="3" />
+    <circle cx="9" cy="11" r="2.5" />
+    <path d="M5.5 18c.6-2.2 1.9-3.3 3.5-3.3s2.9 1.1 3.5 3.3" />
+    <path d="M15 9h3.5" />
+    <path d="M15 13h3.5" />
+  </Icon>
+);
+
 export const KeyboardIcon = (p: IconProps) => (
   <Icon {...p}>
     <rect x="2" y="6" width="20" height="12" rx="3" />

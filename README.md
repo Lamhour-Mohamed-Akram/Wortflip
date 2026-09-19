@@ -5,6 +5,8 @@ A static Progressive Web App: no account, no server, no requests to any API whil
 
 **Live:** https://wortflip.netlify.app
 
+**Made by** Mohamed Akram Lamhour: [GitHub](https://github.com/Lamhour-Mohamed-Akram) · [LinkedIn](https://www.linkedin.com/in/ak2lamhour/)
+
 - **Tap** to flip the card: definition, example sentence and forms (plural, verb forms, comparison), all in simple German.
 - **Swipe** to rate: right = "Kenne ich", left = "Noch lernen". Buttons and keyboard work too.
 - **Spaced repetition** decides when a word comes back (Leitner boxes: 1, 3, 7, 14, 30 days).
