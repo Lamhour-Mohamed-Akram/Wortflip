@@ -6,6 +6,7 @@
  *
  *   node scripts/import-translations.mjs [--dry-run]
  *
+ * scripts/import/translations-manual.json holds hand-written fallbacks (keyed by id).
  * Pages already in scripts/.cache/wiktionary.json are reused; only missing pages
  * (typically the hand-written words) are fetched, 30 per request every three seconds.
  * License of the translations: CC BY-SA 4.0 (see NOTICE.md).
@@ -19,6 +20,8 @@ import { fetchWikitexts, loadCache, saveCache } from './import-vocabulary.mjs';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const VOCAB_DIR = join(ROOT, 'src', 'data', 'vocabulary');
 const OUT = join(VOCAB_DIR, 'translations.json');
+// Hand-written fallbacks for words whose page has no English table; they win over Wiktionary.
+const MANUAL = join(ROOT, 'scripts', 'import', 'translations-manual.json');
 
 /** { id, word, type } of every hand-written entry, read from the level files. */
 function handWrittenWords() {
@@ -54,10 +57,11 @@ async function main() {
   const pages = await fetchWikitexts(words.map((w) => title(w.word)), cache);
   saveCache('wiktionary', cache);
 
+  const manual = JSON.parse(readFileSync(MANUAL, 'utf8'));
   const translations = {};
   let missing = 0;
   for (const w of words) {
-    const translation = translationFor(pages[title(w.word)], w.type);
+    const translation = manual[w.id] ?? translationFor(pages[title(w.word)], w.type);
     if (translation) translations[w.id] = translation;
     else missing += 1;
   }

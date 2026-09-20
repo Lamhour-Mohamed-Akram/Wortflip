@@ -29,15 +29,15 @@ export function FlashcardFront({ item }: { item: VocabularyItem }) {
 
 export function FlashcardBack({ item }: { item: VocabularyItem }) {
   return (
-    <div className="flex h-full flex-col p-5 short:p-4">
+    <div className="flex min-h-[22rem] flex-col p-5 short:min-h-[19rem] short:p-4">
       <div className="flex items-start justify-between gap-2">
         <span className="text-xl font-black leading-tight">{headword(item)}</span>
         <Chip variant="solid" className="mt-0.5 shrink-0">
           {item.level}
         </Chip>
       </div>
-      <div className="mt-3 min-h-0 flex-1 overflow-y-auto overscroll-contain short:mt-2">
-        <WordDetails item={item} />
+      <div className="mt-3 flex-1 short:mt-2">
+        <WordDetails item={item} showCredits={false} />
       </div>
       <p className="mt-3 flex items-center justify-between short:mt-2 font-mono text-[11px] font-bold uppercase tracking-wider text-gray">
         <span className="flex items-center gap-1">

@@ -38,7 +38,7 @@ export const dataset: VocabularyDataset = {
     importedVocabulary.length === 0
       ? `Alle ${vocabulary.length} Einträge wurden von Hand für Wortflip geschrieben. Sie stammen aus keiner externen Quelle.`
       : `${vocabulary.length} Einträge wurden von Hand für Wortflip geschrieben. ${importedVocabulary.length} Einträge wurden mit dem ` +
-        'Import-Skript aus den unten genannten Quellen übernommen. Jede importierte Karte zeigt ihre Quelle auf der Rückseite.',
+        'Import-Skript aus den unten genannten Quellen übernommen. Die Quelle jedes importierten Eintrags steht in der Wortliste.',
   sources: importedSources,
   items: withTranslations([...vocabulary, ...importedVocabulary]),
 };

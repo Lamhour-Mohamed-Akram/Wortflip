@@ -11,7 +11,10 @@
  *   node scripts/import-vocabulary.mjs --frequency 2000 [--a1 500] [--a2 1200] [--b1 3000] [--b2 7000] [--limit 1500]
  *   (rank thresholds: below a1 -> A1, below a2 -> A2, below b1 -> B1, below b2 -> B2, else C1;
  *    --min-rank N skips the N most frequent tokens; --strict drops words reached through an inflected form,
- *    interjections, entries marked as vulgar or derogatory, and one-word stub definitions)
+ *    interjections, entries marked as vulgar or derogatory, one-word stub definitions,
+ *    and words without an English translation table, which are mostly names and rare derivations)
+ *   --lemma-only: never resolve a list word through an inflected form (for curated lists such as the
+ *   Goethe ones, where "heute" must not become the verb "heuen")
  *   Options: --merge (keep the entries already in imported.json and add new ones)
  *            --override-level (with --merge: the list's level wins for words already imported)
  *            --no-sentences  --dry-run  --out <file>  --help
@@ -25,6 +28,7 @@ import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   classify,
+  englishTranslation,
   entries,
   firstDefinition,
   firstExample,
@@ -69,7 +73,7 @@ const SOURCES = {
     url: 'https://tatoeba.org/de',
     license: 'CC BY 2.0 FR',
     licenseUrl: 'https://creativecommons.org/licenses/by/2.0/fr/deed.de',
-    note: 'Beispielsätze der importierten Einträge. Der Autor jedes Satzes steht auf der Karte.',
+    note: 'Beispielsätze der importierten Einträge. Der Autor jedes Satzes steht in der Wortliste.',
   },
 };
 
@@ -93,6 +97,9 @@ const OFFENSIVE =
   /\b(derb|vulgär|abwertend|Schimpfwort|Geschlechtsorgan|Geschlechtsverkehr|obszön|Fäkalsprache|Prostituierte[rn]?)\b/i;
 function lowValueReason(info) {
   if (info.type === 'other') return 'interjection';
+  // Frequency lists are full of first names, English words and rare derivations
+  // ("kugeln"); real vocabulary has an English translation table.
+  if (!info.translationEn) return 'no-english';
   if (OFFENSIVE.test(info.definitionDe)) return 'offensive';
   const definition = info.definitionDe;
   if (definition.length < 14 || /\d\.$/.test(definition) || /^Ohne Plural/i.test(definition)) return 'stub';
@@ -100,7 +107,7 @@ function lowValueReason(info) {
 }
 
 function parseArgs(argv) {
-  const args = { list: null, frequency: 0, a1: 500, a2: 1200, b1: 3000, b2: 7000, minRank: 0, strict: false, level: 'A1', limit: Infinity, sentences: true, dryRun: false, out: OUT_DEFAULT, merge: false, overrideLevel: false };
+  const args = { list: null, frequency: 0, a1: 500, a2: 1200, b1: 3000, b2: 7000, minRank: 0, strict: false, lemmaOnly: false, level: 'A1', limit: Infinity, sentences: true, dryRun: false, out: OUT_DEFAULT, merge: false, overrideLevel: false };
   for (let i = 0; i < argv.length; i++) {
     const flag = argv[i];
     const next = () => argv[++i];
@@ -112,6 +119,7 @@ function parseArgs(argv) {
     else if (flag === '--b2') args.b2 = Number(next());
     else if (flag === '--min-rank') args.minRank = Number(next());
     else if (flag === '--strict') args.strict = true;
+    else if (flag === '--lemma-only') args.lemmaOnly = true;
     else if (flag === '--level') args.level = next();
     else if (flag === '--limit') args.limit = Number(next());
     else if (flag === '--out') args.out = next();
@@ -224,7 +232,13 @@ function analysePage(title, wikitext) {
     if (info.kind !== 'lemma') continue;
     const definition = firstDefinition(entry.body);
     if (!definition) continue;
-    const item = { word: title, type: info.type, definitionDe: tidyDefinition(definition), wiktionaryExample: firstExample(entry.body) };
+    const item = {
+      word: title,
+      type: info.type,
+      definitionDe: tidyDefinition(definition),
+      wiktionaryExample: firstExample(entry.body),
+      translationEn: englishTranslation(entry.body),
+    };
     if (info.type === 'noun') {
       const noun = parseNoun(entry.body);
       if (!noun) continue;
@@ -411,7 +425,7 @@ async function main() {
       let info = analysed.get(title);
       // In strict mode a token must be the base form itself; "wassern" reached
       // through the plural "Wassern" is exactly the kind of rare lemma to avoid.
-      if (info?.lemma) info = args.strict ? null : analysed.get(info.lemma);
+      if (info?.lemma) info = args.strict || args.lemmaOnly ? null : analysed.get(info.lemma);
       if (info && !info.lemma && (!args.strict || info.word.length >= 4)) {
         found = info;
         break;

@@ -39,7 +39,7 @@ export type SessionSize = 10 | 20 | 30;
 export interface Settings {
   levels: Level[];
   sessionSize: SessionSize;
-  /** Show the English translation on the back of the card (off by default: think in German). */
+  /** Show the English translation on the back of the card (on by default, can be switched off to stay in German). */
   showTranslation: boolean;
   onboarded: boolean;
 }

@@ -27,12 +27,12 @@ export function LevelPicker({ name, value, onChange, legend = 'Level' }: LevelPi
             <label
               key={level}
               className={cn(
-                'flex min-h-14 cursor-pointer flex-col items-center justify-center rounded-xl border-3 border-black px-2 py-2 text-center transition-[transform,box-shadow,background-color] duration-100',
+                'relative flex min-h-14 cursor-pointer flex-col items-center justify-center rounded-xl border-3 border-black px-2 py-2 text-center transition-[transform,box-shadow,background-color] duration-100',
                 'has-focus-visible:outline-3 has-focus-visible:outline-dashed has-focus-visible:outline-offset-3 has-focus-visible:outline-black',
                 checked ? 'bg-yellow shadow-hard' : 'bg-white shadow-hard-xs hover:bg-yellow-light',
               )}
             >
-              <input type="checkbox" name={name} value={level} checked={checked} onChange={() => toggle(level)} className="sr-only" />
+              <input type="checkbox" name={name} value={level} checked={checked} onChange={() => toggle(level)} className="absolute inset-0 cursor-pointer appearance-none rounded-[inherit] opacity-0" />
               <span className="flex items-center gap-1 text-lg font-black leading-none">
                 {checked && <CheckIcon size={16} strokeWidth={3.5} />}
                 {level}

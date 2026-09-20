@@ -139,7 +139,8 @@ export function LearnScreen({ onNavigate }: { onNavigate: (tab: Tab) => void }) 
   }
 
   return (
-    <div className="flex h-full flex-col">
+    // min-h-full instead of h-full: a long card back makes the screen scroll rather than the card.
+    <div className="flex min-h-full flex-col">
       <Header
         streakDays={streakDays}
         kind={session.kind}
@@ -310,7 +311,7 @@ function CardPlayer({ item, remaining, onRate }: CardPlayerProps) {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex min-h-0 flex-1 items-center justify-center px-7 pb-7 pt-4 short:px-6 short:pb-5 short:pt-2">
-        <div className={cn('relative h-full max-h-[32rem] w-full max-w-[21rem]', hint && 'animate-wiggle')}>
+        <div className={cn('relative w-full max-w-[21rem]', hint && 'animate-wiggle')}>
           {remaining > 2 && (
             <div aria-hidden="true" className="absolute inset-0 translate-x-3 translate-y-3 rotate-[3deg] rounded-card border-3 border-black bg-yellow" />
           )}

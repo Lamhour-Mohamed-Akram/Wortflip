@@ -10,8 +10,8 @@ A static Progressive Web App: no account, no server, no requests to any API whil
 - **Tap** to flip the card: definition, example sentence and forms (plural, verb forms, comparison), all in simple German.
 - **Swipe** to rate: right = "Kenne ich", left = "Noch lernen". Buttons and keyboard work too.
 - **Spaced repetition** decides when a word comes back (Leitner boxes: 1, 3, 7, 14, 30 days).
-- **4596 words** in five levels: 627 hand-written (A1 193, A2 147, B1 144, B2 71, C1 72) plus 3969 imported from Wiktionary and Tatoeba. The A1 to B1 imports were selected with the Goethe-Institut word lists (A1 410, A2 472, B1 1506); the B2 and C1 imports (775 and 806) were selected by word frequency, so those two levels are approximate. Levels can be combined freely.
-- **Optional English translation**: off by default so you think in German. Switch it on in Settings and the back of every card shows a short translation from the German Wiktionary (4,500 of the 4,596 words have one).
+- **4593 words** in five levels: 627 hand-written (A1 193, A2 147, B1 144, B2 71, C1 72) plus 3966 imported from Wiktionary and Tatoeba. The A1 to B1 imports were selected with the Goethe-Institut word lists (A1 409, A2 472, B1 1499); the B2 and C1 imports (714 and 872) were selected by word frequency, so those two levels are approximate. Levels can be combined freely.
+- **English translation**: the back of every card shows a short translation from the German Wiktionary (every word has one; about 50 come from a small hand-written list). It can be switched off in Settings for learners who want to stay fully in German.
 - **Word list with search**: filter by level and word type, search even without umlauts ("gefuhl" finds "Gefühl"), and learn the current selection. Search runs entirely in the browser over the bundled data; nothing is looked up online and nothing counts against hosting limits.
 - **Offline and installable**: app shell, vocabulary and fonts are cached by a service worker.
 - **Add to home screen**: an install card triggers the native install prompt where the browser supports it (Android, Chrome and Edge on desktop) and shows step-by-step instructions on iPhone and iPad, matched to the browser in use (Safari, Chrome, Edge, Firefox).
@@ -173,7 +173,7 @@ type VocabularyItem = {
 `npm run import` fetches words from two free sources and writes them to `src/data/vocabulary/imported.json` (`imported.ts` next to it is only a typed wrapper):
 
 - **German Wiktionary** (MediaWiki API): article, plural, verb forms, comparative and superlative, and the first definition. License CC BY-SA 4.0.
-- **Tatoeba** (API): one short example sentence per word with its author. License CC BY 2.0 FR; the author is shown on every card.
+- **Tatoeba** (API): one short example sentence per word with its author. License CC BY 2.0 FR; the author is named in the word list entry (the learning card itself stays free of credits).
 
 ```bash
 npm run import -- --list scripts/import/wordlist-test.txt        # your own list: one word per line, optional level
@@ -185,7 +185,7 @@ IMPORT_CONTACT="you@example.com" npm run import -- --list ...    # contact for t
 npm run import:translations                                       # English translations for every word (hand-written and imported)
 ```
 
-`npm run import:translations` reads the English words from the translation tables of the same Wiktionary pages (first sense, at most three words) and writes them to `src/data/vocabulary/translations.json`, keyed by word id. It reuses the cached pages and only fetches the hand-written words. Run it again after adding words to a level file.
+`npm run import:translations` reads the English words from the translation tables of the same Wiktionary pages (first sense, at most three words) and writes them to `src/data/vocabulary/translations.json`, keyed by word id. It reuses the cached pages and only fetches the hand-written words; `scripts/import/translations-manual.json` holds hand-written fallbacks for the few pages without an English table. Run it again after adding words to a level file.
 
 The script runs only on your machine, never in the app and never in the Netlify build. It requests slowly (Tatoeba: one request per second; Wiktionary: 30 pages every three seconds), waits as long as the server demands on a 429 answer, caches every response in `scripts/.cache/` (further runs are almost free) and skips words that already exist in the hand-written files. A run with 3000 words takes about 35 minutes.
 
@@ -193,15 +193,15 @@ The script runs only on your machine, never in the app and never in the Netlify 
 
 ```bash
 node scripts/import/goethe-to-wordlist.mjs --out scripts/.cache/goethe.txt --in a1/*.tsv A1 --in a2/*.tsv A2 --in b1.csv B1
-npm run import -- --list scripts/.cache/goethe.txt --merge --override-level
+npm run import -- --list scripts/.cache/goethe.txt --lemma-only --merge --override-level
 ```
 
 What the import can and cannot do:
 
 - Forms are reliable, example sentences are mostly short and natural.
 - Wiktionary definitions are written for adults, not in simple learner German, and the first sense is not always the everyday one (for "Bahn" the physics meaning comes before the railway). To improve an imported card, write the word into one of the level files; the next import skips it.
-- The shipped import (3969 entries) combines two runs. First the Goethe lists as the selection for A1 to B1 (2388 entries); words that already exist hand-written were skipped. Then the frequency mode for B2 and C1 (1581 entries): ranks 3000 to about 7700 of the German 50k list from the [FrequencyWords](https://github.com/hermitdave/FrequencyWords) project (derived from OpenSubtitles), split at rank 5500. Only the ranks are used for the selection; nothing from that list is copied into the dataset.
-- The plain frequency mode occasionally yields rare base forms (such as "wassern" instead of "Wasser"). `--strict` therefore only accepts words whose base form is itself frequent and at least four letters long, and skips interjections, entries whose Wiktionary definition marks them as vulgar or derogatory, and stub definitions. Frequency is only a rough proxy for CEFR levels, so the B2 and C1 assignments are approximate; move a word into a hand-written level file to fix it.
+- The shipped import (3966 entries) combines two runs. First the Goethe lists as the selection for A1 to B1 (2380 entries, `--lemma-only` so that a list word is never resolved through an inflected form: "heute" must not become the verb "heuen"); words that already exist hand-written were skipped. Then the frequency mode for B2 and C1 (1586 entries): ranks 3000 to about 7700 of the German 50k list from the [FrequencyWords](https://github.com/hermitdave/FrequencyWords) project (derived from OpenSubtitles), split at rank 5500. Only the ranks are used for the selection; nothing from that list is copied into the dataset.
+- The plain frequency mode occasionally yields rare base forms (such as "wassern" instead of "Wasser"). `--strict` therefore only accepts words whose base form is itself frequent and at least four letters long, and skips interjections, entries whose Wiktionary definition marks them as vulgar or derogatory, stub definitions, and words without an English translation table (mostly first names, English words and rare derivations). Frequency is only a rough proxy for CEFR levels, so the B2 and C1 assignments are approximate; move a word into a hand-written level file to fix it.
 
 For very large datasets a dynamic import (`import('./vocabulary/large')`) keeps the data in its own, still precached chunk.
 

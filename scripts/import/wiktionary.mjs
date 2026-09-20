@@ -9,7 +9,7 @@ const TYPE_RULES = [
   [/Substantiv/, 'noun'],
   [/\bVerb\b|Hilfsverb|Modalverb/, 'verb'],
   [/Adjektiv/, 'adjective'],
-  [/Adverb/, 'adverb'],
+  [/adverb/i, 'adverb'], // also Temporaladverb, Lokaladverb, Modaladverb, ...
   [/Präposition|Postposition/, 'preposition'],
   [/Konjunktion|Subjunktion/, 'conjunction'],
   [/Partikel|Interjektion|Grußformel|Antwortpartikel/, 'other'],

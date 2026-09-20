@@ -182,7 +182,6 @@
 .flip-inner {
   position: relative;
   width: 100%;
-  height: 100%;
   transform-style: preserve-3d;
   transition: transform var(--flip-duration, 450ms) cubic-bezier(0.4, 0.15, 0.2, 1);
 }
@@ -196,7 +195,10 @@
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
+/* The back stays in normal flow and gives the card its height (no inner scrolling);
+   the front is layered over it. */
 .flip-face-back {
+  position: relative;
   transform: rotateY(180deg);
 }
 /* The face that is turned away is also hidden from find-in-page and assistive

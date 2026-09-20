@@ -70,11 +70,20 @@ function attribution(item: VocabularyItem, withTranslation: boolean): string | n
   return parts.length > 0 ? parts.join(' · ') : null;
 }
 
+interface WordDetailsProps {
+  item: VocabularyItem;
+  compact?: boolean;
+  /** The source line (Wiktionary, Tatoeba author). The word list shows it, the learning card keeps it off. */
+  showCredits?: boolean;
+}
+
 /** Definition, example sentence and grammatical forms. Shared by the card back and the word list. */
-export function WordDetails({ item, compact = false }: { item: VocabularyItem; compact?: boolean }) {
+export function WordDetails({ item, compact = false, showCredits = true }: WordDetailsProps) {
   const { state } = useApp();
   const translation = state.settings.showTranslation ? item.translationEn : undefined;
-  const credits = attribution(item, translation !== undefined);
+  const credits = showCredits ? attribution(item, translation !== undefined) : null;
+  // Dialogue examples („Danke!“ „Bitte!“) already carry their quotation marks.
+  const quoted = /^[„"»]/.test(item.exampleDe);
   return (
     <div className={cn('flex flex-col', compact ? 'gap-2.5' : 'gap-3.5 short:gap-2.5')}>
       <section>
@@ -97,7 +106,7 @@ export function WordDetails({ item, compact = false }: { item: VocabularyItem; c
             compact ? 'text-[14px]' : 'text-[15px] short:text-[14px]',
           )}
         >
-          „{item.exampleDe}“
+          {quoted ? item.exampleDe : `„${item.exampleDe}“`}
         </p>
       </section>
       <WordForms item={item} />

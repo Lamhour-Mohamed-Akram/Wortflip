@@ -70,7 +70,7 @@ export function SettingsScreen() {
           />
         </div>
         <p className="mt-3 text-xs leading-snug text-gray">
-          Zeigt auf der Rückseite eine kurze englische Übersetzung aus dem Wiktionary. Standard: aus, damit du auf Deutsch denkst.
+          Zeigt auf der Rückseite eine kurze englische Übersetzung aus dem Wiktionary. Schalte sie aus, wenn du ganz auf Deutsch denken willst.
         </p>
       </Window>
 

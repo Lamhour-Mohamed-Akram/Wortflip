@@ -257,13 +257,13 @@ export function SwipeableCard({
       onPointerUp={(e) => endDrag(e, false)}
       onPointerCancel={(e) => endDrag(e, true)}
       className={cn(
-        'relative h-full w-full select-none rounded-card outline-offset-4',
+        'relative w-full select-none rounded-card outline-offset-4',
         dragging ? 'cursor-grabbing' : 'cursor-pointer',
         !exiting && 'animate-card-in',
       )}
       style={{ touchAction: 'pan-y' }}
     >
-      <div className="flip-scene h-full w-full">
+      <div className="flip-scene w-full">
         <div
           className="flip-inner"
           data-face={face}
