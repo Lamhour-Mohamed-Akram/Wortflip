@@ -1,5 +1,6 @@
 import { dataset, pluralForm, type VocabularyItem } from '../data';
 import { cn } from '../lib/cn';
+import { useApp } from '../state/AppContext';
 
 interface Row {
   label: string;
@@ -47,6 +48,7 @@ export function WordForms({ item, className }: { item: VocabularyItem; className
   );
 }
 
+const TRANSLATION_SOURCE = 'de-wiktionary';
 const SECTION_LABEL = 'font-mono text-[11px] font-bold uppercase tracking-wider text-gray';
 
 function sourceName(id: string): string {
@@ -55,10 +57,12 @@ function sourceName(id: string): string {
 }
 
 /** "Wörterbuch: Deutsches Wiktionary (CC BY-SA 4.0) · Beispiel: Tatoeba (CC BY 2.0 FR), Autor: xyz" */
-function attribution(item: VocabularyItem): string | null {
+function attribution(item: VocabularyItem, withTranslation: boolean): string | null {
   const parts: string[] = [];
   const definitionIds = (item.sourceIds ?? []).filter((id) => id !== item.exampleSource?.sourceId);
   if (definitionIds.length > 0) parts.push(`Wörterbuch: ${definitionIds.map(sourceName).join(', ')}`);
+  // Hand-written words carry no dictionary source, but their translation still comes from the Wiktionary.
+  if (withTranslation && !definitionIds.includes(TRANSLATION_SOURCE)) parts.push(`Übersetzung: ${sourceName(TRANSLATION_SOURCE)}`);
   if (item.exampleSource) {
     const author = item.exampleSource.author ? `, Autor: ${item.exampleSource.author}` : '';
     parts.push(`Beispiel: ${sourceName(item.exampleSource.sourceId)}${author}`);
@@ -68,12 +72,23 @@ function attribution(item: VocabularyItem): string | null {
 
 /** Definition, example sentence and grammatical forms. Shared by the card back and the word list. */
 export function WordDetails({ item, compact = false }: { item: VocabularyItem; compact?: boolean }) {
+  const { state } = useApp();
+  const translation = state.settings.showTranslation ? item.translationEn : undefined;
+  const credits = attribution(item, translation !== undefined);
   return (
     <div className={cn('flex flex-col', compact ? 'gap-2.5' : 'gap-3.5 short:gap-2.5')}>
       <section>
         <h3 className={SECTION_LABEL}>Bedeutung</h3>
         <p className={cn('mt-0.5 font-medium leading-snug', compact ? 'text-[15px]' : 'text-[17px] short:text-[15px]')}>{item.definitionDe}</p>
       </section>
+      {translation && (
+        <section>
+          <h3 className={SECTION_LABEL}>Englisch</h3>
+          <p className={cn('mt-0.5 leading-snug', compact ? 'text-[14px]' : 'text-[15px] short:text-[14px]')} lang="en">
+            {translation}
+          </p>
+        </section>
+      )}
       <section>
         <h3 className={SECTION_LABEL}>Beispiel</h3>
         <p
@@ -86,7 +101,7 @@ export function WordDetails({ item, compact = false }: { item: VocabularyItem; c
         </p>
       </section>
       <WordForms item={item} />
-      {attribution(item) && <p className="font-mono text-[10px] leading-snug text-gray">{attribution(item)}</p>}
+      {credits && <p className="font-mono text-[10px] leading-snug text-gray">{credits}</p>}
     </div>
   );
 }

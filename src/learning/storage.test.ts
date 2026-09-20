@@ -34,7 +34,7 @@ describe('storage', () => {
   it('drops invalid parts but keeps the valid ones', () => {
     const state = sanitizeState(
       {
-        settings: { levels: ['A2', 'C2'], sessionSize: 99, onboarded: true },
+        settings: { levels: ['A2', 'C2'], sessionSize: 99, showTranslation: 'yes', onboarded: true },
         progress: {
           tisch: { status: 'learning', box: 1, dueAt: 5, lastReviewedAt: 4, correct: 1, incorrect: 0, streak: 1 },
           gehen: { status: 'weird', box: -1 },
@@ -48,6 +48,7 @@ describe('storage', () => {
     );
     expect(state.settings.levels).toEqual(['A2']);
     expect(state.settings.sessionSize).toBe(10);
+    expect(state.settings.showTranslation).toBe(false);
     expect(state.settings.onboarded).toBe(true);
     expect(Object.keys(state.progress)).toEqual(['tisch']);
     expect(state.streak).toEqual({ current: 3, best: 3, lastActiveDay: null });

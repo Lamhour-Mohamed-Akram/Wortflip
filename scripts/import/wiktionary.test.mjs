@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { classify, entries, firstDefinition, firstExample, germanSection, parseAdjective, parseNoun, parseVerb, slugify } from './wiktionary.mjs';
+import { classify, englishTranslation, entries, firstDefinition, firstExample, germanSection, parseAdjective, parseNoun, parseVerb, slugify } from './wiktionary.mjs';
 
 const TISCH = `== Tisch ({{Sprache|Deutsch}}) ==
 === {{Wortart|Substantiv|Deutsch}}, {{m}} ===
@@ -93,5 +93,25 @@ describe('withoutDashes', () => {
     expect(withoutDashes('Freundschaft \u2013 das ist wie Heimat.')).toBe('Freundschaft, das ist wie Heimat.');
     expect(withoutDashes('Etwas auf etwas \u2013 meist ein Fahrzeug \u2013 bringen.')).toBe('Etwas auf etwas, meist ein Fahrzeug, bringen.');
     expect(withoutDashes('Zwei Dumme \u2014 ein Gedanke.')).toBe('Zwei Dumme, ein Gedanke.');
+  });
+});
+
+describe('englishTranslation', () => {
+  it('takes the English words of the first translation table', () => {
+    const body = `{{Ü-Tabelle|1|G=Grusel hervorrufend|Ü-Liste=
+*{{en}}: {{Ü|en|gruesome}}, \'\'umgangssprachlich:\'\' {{Ü|en|creepy}}, {{Ü|en|scary}}, {{Ü|en|spooky}}
+*{{fr}}: {{Ü|fr|effrayant}}
+}}
+{{Ü-Tabelle|2|G=anderes|Ü-Liste=
+*{{en}}: {{Ü|en|other}}
+}}`;
+    expect(englishTranslation(body)).toBe('gruesome, creepy, scary');
+  });
+
+  it('keeps only sense 1 of an old single-table page and returns null without English', () => {
+    expect(englishTranslation('{{Ü-Tabelle|Ü-Liste=\n*{{en}}: [1] {{Ü|en|house}}; [2] {{Ü|en|family}}\n}}')).toBe('house');
+    expect(englishTranslation('{{Ü-Tabelle|1|Ü-Liste=\n*{{fr}}: {{Ü|fr|maison}}\n}}')).toBeNull();
+    expect(englishTranslation('{{Ü-Tabelle|1|Ü-Liste=\n*{{fr}}: {{Ü|fr|bon}}\n}}\n{{Ü-Tabelle|2|Ü-Liste=\n*{{en}}: {{Ü|en|good}}\n}}')).toBe('good');
+    expect(englishTranslation('nothing here')).toBeNull();
   });
 });

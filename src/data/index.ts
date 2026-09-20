@@ -1,6 +1,7 @@
 import type { Level, VocabularyDataset, VocabularyItem, VocabularySource, WordType } from './types';
 import { vocabulary } from './vocabulary';
 import { importedSources, importedVocabulary } from './vocabulary/imported';
+import translationsFile from './vocabulary/translations.json';
 
 export type { Article, Level, VocabularyDataset, VocabularyItem, VocabularySource, WordType } from './types';
 
@@ -18,6 +19,13 @@ export const WORD_TYPE_LABELS: Record<WordType, string> = {
   other: 'Sonstiges',
 };
 
+const translations = translationsFile.translations as Record<string, string>;
+
+/** Attaches the optional English translations (German Wiktionary) to the items that have one. */
+function withTranslations(items: VocabularyItem[]): VocabularyItem[] {
+  return items.map((item) => (translations[item.id] ? { ...item, translationEn: translations[item.id] } : item));
+}
+
 /**
  * The dataset the app currently runs on. Swap `items` for a larger curated
  * list and describe its origin here; the attribution page renders `origin`
@@ -32,7 +40,7 @@ export const dataset: VocabularyDataset = {
       : `${vocabulary.length} Einträge wurden von Hand für Wortflip geschrieben. ${importedVocabulary.length} Einträge wurden mit dem ` +
         'Import-Skript aus den unten genannten Quellen übernommen. Jede importierte Karte zeigt ihre Quelle auf der Rückseite.',
   sources: importedSources,
-  items: [...vocabulary, ...importedVocabulary],
+  items: withTranslations([...vocabulary, ...importedVocabulary]),
 };
 
 /**

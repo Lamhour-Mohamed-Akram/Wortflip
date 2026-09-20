@@ -28,7 +28,7 @@ describe('reducer', () => {
     const partial = reducer(state, { type: 'progress/reset' });
     expect(partial.progress).toEqual({});
     expect(partial.stats.totalReviews).toBe(0);
-    expect(partial.settings).toEqual({ levels: ['A2'], sessionSize: 30, onboarded: true });
+    expect(partial.settings).toEqual({ levels: ['A2'], sessionSize: 30, showTranslation: false, onboarded: true });
 
     const full = reducer(state, { type: 'app/reset-all' });
     expect(full).toEqual(defaultState());
@@ -43,5 +43,16 @@ describe('reducer', () => {
     expect(reducer(state, { type: 'settings/levels', levels: ['A1'] }).session).not.toBeNull(); // unchanged levels
     state = reducer(state, { type: 'settings/levels', levels: ['B1'] });
     expect(state.session).toBeNull();
+  });
+
+  it('toggling the translation keeps the running session', () => {
+    let state = reducer(defaultState(), {
+      type: 'session/set',
+      session: { kind: 'daily', queue: ['tisch'], total: 1, correct: 0, incorrect: 0, startedAt: NOW },
+    });
+    state = reducer(state, { type: 'settings/showTranslation', showTranslation: true });
+    expect(state.settings.showTranslation).toBe(true);
+    expect(state.session).not.toBeNull();
+    expect(reducer(state, { type: 'settings/showTranslation', showTranslation: true })).toBe(state);
   });
 });

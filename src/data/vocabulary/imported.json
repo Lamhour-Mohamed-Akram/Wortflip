@@ -1,6 +1,6 @@
 {
   "generatedBy": "scripts/import-vocabulary.mjs",
-  "generatedAt": "2026-09-19",
+  "generatedAt": "2026-09-20",
   "sources": [
     {
       "id": "de-wiktionary",
@@ -8,7 +8,7 @@
       "url": "https://de.wiktionary.org",
       "license": "CC BY-SA 4.0",
       "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/deed.de",
-      "note": "Definitionen, Artikel, Plural-, Verb- und Steigerungsformen der importierten Einträge."
+      "note": "Definitionen, Artikel, Plural-, Verb- und Steigerungsformen der importierten Einträge sowie die englischen Übersetzungen."
     },
     {
       "id": "tatoeba",

@@ -26,6 +26,11 @@ const SHORTCUTS = [
   { keys: ['→'], action: 'Kenne ich' },
 ];
 
+const TRANSLATION_CHOICES: Choice<'off' | 'on'>[] = [
+  { value: 'off', label: 'Aus', hint: 'nur Deutsch' },
+  { value: 'on', label: 'An', hint: 'auf der Rückseite' },
+];
+
 export function SettingsScreen() {
   const { state, dispatch, persistent } = useApp();
   const { settings } = state;
@@ -54,6 +59,18 @@ export function SettingsScreen() {
         </div>
         <p className="mt-3 text-xs leading-snug text-gray">
           Eine laufende Runde wird nach einer Änderung neu zusammengestellt. Dein Lernfortschritt bleibt erhalten.
+        </p>
+        <div className="mt-4">
+          <ChoiceGroup
+            name="settings-translation"
+            legend="Englische Übersetzung"
+            options={TRANSLATION_CHOICES}
+            value={settings.showTranslation ? 'on' : 'off'}
+            onChange={(value) => dispatch({ type: 'settings/showTranslation', showTranslation: value === 'on' })}
+          />
+        </div>
+        <p className="mt-3 text-xs leading-snug text-gray">
+          Zeigt auf der Rückseite eine kurze englische Übersetzung aus dem Wiktionary. Standard: aus, damit du auf Deutsch denkst.
         </p>
       </Window>
 
@@ -114,7 +131,7 @@ export function SettingsScreen() {
 
       <Window title="Über" className="mt-4">
         <p className="text-sm leading-snug">
-          Wortflip {__APP_VERSION__} · Karteikarten für deutschen Wortschatz. Einsprachig: Alle Erklärungen sind auf einfachem Deutsch.
+          Wortflip {__APP_VERSION__} · Karteikarten für deutschen Wortschatz. Alle Erklärungen sind auf einfachem Deutsch; eine englische Übersetzung lässt sich in den Einstellungen einblenden.
         </p>
         <div className="mt-4 rounded-xl border-2 border-black bg-yellow-light p-3">
           <p className="font-mono text-[11px] font-bold uppercase tracking-wider text-gray">Gemacht von</p>

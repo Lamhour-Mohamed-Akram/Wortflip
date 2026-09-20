@@ -105,6 +105,30 @@ export function extractTemplate(text, name) {
   return null;
 }
 
+/**
+ * English translations of the first sense, from the first translation table of
+ * an entry: "house, home" (at most three words), or null.
+ */
+export function englishTranslation(body) {
+  // One table per sense; a table can hold multi-line templates, so the next
+  // table (not "}}") marks its end. Sense 1 comes first; if it has no English
+  // line (it happens, e.g. "gut"), the next sense that has one is used.
+  const tables = body.split('{{Ü-Tabelle').slice(1);
+  for (const table of tables) {
+    const line = /^\*\{\{en\}\}:(.*)$/m.exec(table);
+    if (!line) continue;
+    // Older pages list every sense in one table ("[1] house; [2] family"): keep sense 1.
+    const text = line[1].split(/\[2[^\]]*\]/)[0];
+    const words = [];
+    for (const match of text.matchAll(/\{\{Ü\|en\|([^}|]+)(?:\|[^}]*)?\}\}/g)) {
+      const word = withoutDashes(match[1]).trim();
+      if (word && !words.includes(word)) words.push(word);
+    }
+    if (words.length > 0) return words.slice(0, 3).join(', ');
+  }
+  return null;
+}
+
 /** Wiki markup to plain text. */
 export function cleanWikitext(input) {
   let s = input.replace(/<ref[^>]*\/>/g, '').replace(/<ref[^>]*>[\s\S]*?<\/ref>/g, '');

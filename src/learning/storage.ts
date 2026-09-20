@@ -37,7 +37,7 @@ const WORD_STATUSES: readonly WordStatus[] = ['new', 'learning', 'mastered'];
 const SESSION_KINDS: readonly SessionKind[] = ['daily', 'extra', 'focus', 'custom'];
 
 export function defaultSettings(): Settings {
-  return { levels: ['A1'], sessionSize: 10, onboarded: false };
+  return { levels: ['A1'], sessionSize: 10, showTranslation: false, onboarded: false };
 }
 
 export function defaultState(): AppState {
@@ -129,6 +129,7 @@ function sanitizeSettings(raw: unknown): Settings {
   return {
     levels: levels.length > 0 ? levels : defaults.levels,
     sessionSize: isOneOf(SESSION_SIZES, raw.sessionSize) ? raw.sessionSize : defaults.sessionSize,
+    showTranslation: raw.showTranslation === true,
     onboarded: raw.onboarded === true,
   };
 }

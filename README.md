@@ -11,6 +11,7 @@ A static Progressive Web App: no account, no server, no requests to any API whil
 - **Swipe** to rate: right = "Kenne ich", left = "Noch lernen". Buttons and keyboard work too.
 - **Spaced repetition** decides when a word comes back (Leitner boxes: 1, 3, 7, 14, 30 days).
 - **4596 words** in five levels: 627 hand-written (A1 193, A2 147, B1 144, B2 71, C1 72) plus 3969 imported from Wiktionary and Tatoeba. The A1 to B1 imports were selected with the Goethe-Institut word lists (A1 410, A2 472, B1 1506); the B2 and C1 imports (775 and 806) were selected by word frequency, so those two levels are approximate. Levels can be combined freely.
+- **Optional English translation**: off by default so you think in German. Switch it on in Settings and the back of every card shows a short translation from the German Wiktionary (4,500 of the 4,596 words have one).
 - **Word list with search**: filter by level and word type, search even without umlauts ("gefuhl" finds "Gefühl"), and learn the current selection. Search runs entirely in the browser over the bundled data; nothing is looked up online and nothing counts against hosting limits.
 - **Offline and installable**: app shell, vocabulary and fonts are cached by a service worker.
 - **Add to home screen**: an install card triggers the native install prompt where the browser supports it (Android, Chrome and Edge on desktop) and shows step-by-step instructions on iPhone and iPad, matched to the browser in use (Safari, Chrome, Edge, Firefox).
@@ -181,7 +182,10 @@ npm run import -- --frequency 12000 --min-rank 3000 --b1 3000 --b2 5500 --strict
 npm run import -- --list list.txt --merge --override-level       # add to the existing import, levels from the list win
 npm run import -- --frequency 300 --no-sentences --dry-run        # show only, write nothing
 IMPORT_CONTACT="you@example.com" npm run import -- --list ...    # contact for the User-Agent (Wikimedia asks for it)
+npm run import:translations                                       # English translations for every word (hand-written and imported)
 ```
+
+`npm run import:translations` reads the English words from the translation tables of the same Wiktionary pages (first sense, at most three words) and writes them to `src/data/vocabulary/translations.json`, keyed by word id. It reuses the cached pages and only fetches the hand-written words. Run it again after adding words to a level file.
 
 The script runs only on your machine, never in the app and never in the Netlify build. It requests slowly (Tatoeba: one request per second; Wiktionary: 30 pages every three seconds), waits as long as the server demands on a 429 answer, caches every response in `scripts/.cache/` (further runs are almost free) and skips words that already exist in the hand-written files. A run with 3000 words takes about 35 minutes.
 

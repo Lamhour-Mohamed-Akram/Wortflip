@@ -61,7 +61,7 @@ const SOURCES = {
     url: 'https://de.wiktionary.org',
     license: 'CC BY-SA 4.0',
     licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/deed.de',
-    note: 'Definitionen, Artikel, Plural-, Verb- und Steigerungsformen der importierten Einträge.',
+    note: 'Definitionen, Artikel, Plural-, Verb- und Steigerungsformen der importierten Einträge sowie die englischen Übersetzungen.',
   },
   tatoeba: {
     id: 'tatoeba',
@@ -134,12 +134,12 @@ function parseArgs(argv) {
 
 // ───────────────────────────── cache + polite fetch ─────────────────────────────
 
-function loadCache(name) {
+export function loadCache(name) {
   const file = join(CACHE_DIR, `${name}.json`);
   return existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : {};
 }
 
-function saveCache(name, data) {
+export function saveCache(name, data) {
   mkdirSync(CACHE_DIR, { recursive: true });
   writeFileSync(join(CACHE_DIR, `${name}.json`), JSON.stringify(data));
 }
@@ -172,7 +172,7 @@ async function politeFetch(url, { json = true, delay = REQUEST_DELAY_MS } = {}) 
 // ───────────────────────────── Wiktionary ─────────────────────────────
 
 /** Wikitext per title (null when the page does not exist), 50 titles per request. */
-async function fetchWikitexts(titles, cache) {
+export async function fetchWikitexts(titles, cache) {
   const wanted = [...new Set(titles)].filter((title) => !(title in cache));
   for (let i = 0; i < wanted.length; i += WIKTIONARY_BATCH) {
     const batch = wanted.slice(i, i + WIKTIONARY_BATCH);
@@ -512,7 +512,10 @@ async function main() {
   console.log(`\nWrote ${all.length} entries to ${relative(ROOT, args.out)} (${output.length} new)`);
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+// Only run when executed directly; import-translations.mjs reuses the helpers above.
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  main().catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+}

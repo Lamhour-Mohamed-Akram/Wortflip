@@ -25,7 +25,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         advancedChunks: {
-          groups: [{ name: 'vocabulary', test: /imported\.json$/ }],
+          groups: [{ name: 'vocabulary', test: /(imported|translations)\.json$/ }],
         },
       },
     },

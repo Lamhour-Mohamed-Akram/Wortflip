@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Deutsch-Wortschatz (A1\u2013A2) mit wischbaren Karteikarten lernen \u2013 offline, ohne Anmeldung.",
+  "description": "Deutsch-Wortschatz (A1–A2) mit wischbaren Karteikarten lernen – offline, ohne Anmeldung.",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -11,7 +11,8 @@
     "typecheck": "tsc -b",
     "test": "vitest run",
     "icons": "node scripts/generate-icons.mjs",
-    "import": "node scripts/import-vocabulary.mjs"
+    "import": "node scripts/import-vocabulary.mjs",
+    "import:translations": "node scripts/import-translations.mjs"
   },
   "dependencies": {
     "react": "^19.3.0",

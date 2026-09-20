@@ -40,6 +40,8 @@ export interface VocabularyItem {
   definitionDe: string;
   /** One natural example sentence in German. */
   exampleDe: string;
+  /** Optional English translation of the first sense (shown only when enabled in the settings). */
+  translationEn?: string;
   verbForms?: VerbForms;
   adjectiveForms?: AdjectiveForms;
   /** Ids of `VocabularyDataset.sources` this entry was taken from. Omit for hand-written entries. */
