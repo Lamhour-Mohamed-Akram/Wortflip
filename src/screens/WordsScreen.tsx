@@ -3,7 +3,6 @@ import { Button } from '../components/Button';
 import { ChoiceGroup, type Choice } from '../components/ChoiceGroup';
 import { EmptyState } from '../components/EmptyState';
 import { ExternalLinkIcon, SearchIcon, SparkleIcon, TargetIcon } from '../components/Icons';
-import { groupByTheme } from '../data/custom';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { WordRow } from '../components/WordRow';
 import { Chip } from '../components/Chip';
@@ -59,14 +58,17 @@ function matchesType(item: VocabularyItem, filter: TypeFilter): boolean {
 }
 
 export function WordsScreen({ onNavigate }: { onNavigate: (tab: Tab) => void }) {
-  const { state, dispatch, items } = useApp();
+  const { state, dispatch, items, topics } = useApp();
   const { progress, settings } = state;
   const index = useMemo(() => buildIndex(items), [items]);
   const levelOptions = useMemo(() => levelChoices(items), [items]);
   const [level, setLevel] = useState<LevelFilter>(settings.levels.length === 1 ? (settings.levels[0] ?? 'all') : 'all');
   const [type, setType] = useState<TypeFilter>('all');
   const [theme, setTheme] = useState<string>('all');
-  const themeGroups = useMemo(() => groupByTheme(items.filter((item) => item.theme)), [items]);
+  const themeGroups = useMemo(
+    () => [...topics.byTheme.entries()].map(([theme, list]) => ({ theme, levels: LEVELS.filter((level) => list.some((item) => item.level === level)) })),
+    [topics],
+  );
   const themes = useMemo(() => themeGroups.map((g) => g.theme), [themeGroups]);
   const [themeQuery, setThemeQuery] = useState('');
   const themeQ = normalizeSearch(themeQuery);
@@ -84,7 +86,7 @@ export function WordsScreen({ onNavigate }: { onNavigate: (tab: Tab) => void }) 
     for (const entry of index) {
       if (level !== 'all' && entry.item.level !== level) continue;
       if (!matchesType(entry.item, type)) continue;
-      if (theme !== 'all' && entry.item.theme !== theme) continue;
+      if (theme !== 'all' && !topics.of(entry.item.id).includes(theme)) continue;
       let score = 0;
       if (q) {
         if (entry.word.startsWith(q)) score = 0;
@@ -96,7 +98,7 @@ export function WordsScreen({ onNavigate }: { onNavigate: (tab: Tab) => void }) 
     }
     scored.sort((a, b) => a.score - b.score || a.item.word.localeCompare(b.item.word, 'de'));
     return scored.map((s) => s.item);
-  }, [index, level, type, theme, q]);
+  }, [index, level, type, theme, q, topics]);
 
   useEffect(() => setShown(PAGE_SIZE), [level, type, theme, q]);
   // A deleted topic must not keep filtering.
@@ -258,7 +260,11 @@ export function WordsScreen({ onNavigate }: { onNavigate: (tab: Tab) => void }) 
                 item={item}
                 progress={progress[item.id]}
                 now={now}
-                chips={item.theme ? <Chip variant="yellow">{item.theme}</Chip> : undefined}
+                chips={topics.of(item.id).slice(0, 3).map((t) => (
+                  <Chip key={t} variant="yellow">
+                    {t}
+                  </Chip>
+                ))}
               />
             ))}
           </ul>

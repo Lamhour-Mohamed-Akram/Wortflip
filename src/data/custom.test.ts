@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildPrompt, customId, exportCustomWords, groupByTheme, normalizeCustomItem, parseCustomWords } from './custom';
+import { buildPrompt, buildTopicIndex, customId, exportCustomWords, groupByTheme, normalizeCustomItem, ownTopicGroups, parseCustomWords } from './custom';
 import type { VocabularyItem } from './types';
 
 const EXISTING: VocabularyItem[] = [
@@ -111,5 +111,17 @@ describe('helpers', () => {
       ['Arzt', 3, ['A2']],
       ['Ohne Thema', 1, ['B1']],
     ]);
+  });
+
+  it('lets one word belong to several topics', () => {
+    const fehler: VocabularyItem = { id: 'fehler', word: 'Fehler', article: 'der', type: 'noun', level: 'A1', definitionDe: 'x', exampleDe: 'y' };
+    const schlau = normalizeCustomItem({ word: 'schlau', type: 'adjective', level: 'A2', definitionDe: 'x', exampleDe: 'y', theme: 'Intelligence' })!;
+    const links = { Intelligence: ['fehler'], Data: ['fehler'] };
+    const index = buildTopicIndex([fehler, schlau], links);
+    expect(index.of('fehler')).toEqual(['Intelligence', 'Data']);
+    expect([...index.byTheme.keys()]).toEqual(['Data', 'Intelligence']);
+    expect(index.byTheme.get('Intelligence')?.map((i) => i.word)).toEqual(['schlau', 'Fehler']);
+    const groups = ownTopicGroups([schlau], links, new Map([[fehler.id, fehler]]));
+    expect(groups.map((g) => [g.theme, g.items.length])).toEqual([['Data', 1], ['Intelligence', 2]]);
   });
 });

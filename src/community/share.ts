@@ -1,4 +1,4 @@
-import { normalizeCustomItem, NO_THEME } from '../data/custom';
+import { normalizeCustomItem, NO_THEME, ownTopicGroups } from '../data/custom';
 import type { Level, VocabularyItem } from '../data/types';
 import type { AppState } from '../learning/storage';
 import type { Action } from '../state/reducer';
@@ -44,18 +44,10 @@ export async function shareAndMerge(
  * again merges on the server, so it is safe to repeat.
  */
 export function pendingTopics(state: AppState, ownItems: readonly VocabularyItem[]): Map<string, VocabularyItem[]> {
-  const groups = new Map<string, VocabularyItem[]>();
-  const linked = new Set(Object.values(state.themeLinks).flat());
-  for (const item of ownItems) {
-    if (!item.theme || item.theme === NO_THEME) continue;
-    const mine = item.id.startsWith('custom-') || linked.has(item.id);
-    if (!mine) continue;
-    const list = groups.get(item.theme) ?? [];
-    list.push(item);
-    groups.set(item.theme, list);
-  }
+  const byId = new Map(ownItems.map((item) => [item.id, item]));
   const pending = new Map<string, VocabularyItem[]>();
-  for (const [theme, words] of groups) {
+  for (const { theme, items: words } of ownTopicGroups(state.customWords, state.themeLinks, byId)) {
+    if (theme === NO_THEME) continue;
     const sharedId = state.community.shared[theme];
     if (!sharedId) {
       pending.set(theme, words);

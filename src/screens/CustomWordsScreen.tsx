@@ -16,9 +16,9 @@ import {
   buildPrompt,
   exportCustomWords,
   exportFileName,
-  groupByTheme,
   isCustomId,
   NO_THEME,
+  ownTopicGroups,
   MAX_THEME_LENGTH,
   parseCustomWords,
   PROMPT_COUNTS,
@@ -125,10 +125,10 @@ function resultText(
 
 /** "Eigene Wörter": prompt for any AI, paste the answer, learn the words like all others. */
 export function CustomWordsScreen({ onNavigate }: { onNavigate: (tab: Tab) => void }) {
-  const { state, dispatch, items, share } = useApp();
+  const { state, dispatch, items, byId, topics, share } = useApp();
   const sharing = share.sharing;
   const shareError = share.error;
-  const { themeLinks, settings, progress, community } = state;
+  const { customWords, themeLinks, settings, progress, community } = state;
   const [draft] = useState(() => readDraft(settings.levels[0] ?? 'A1'));
   const [level, setLevel] = useState<Level>(draft.level);
   const [theme, setTheme] = useState(draft.theme);
@@ -147,10 +147,12 @@ export function CustomWordsScreen({ onNavigate }: { onNavigate: (tab: Tab) => vo
   const themeRef = useRef<HTMLInputElement>(null);
 
   const prompt = useMemo(() => buildPrompt({ level, theme, count }), [level, theme, count]);
-  // The learner's words: added ones plus bundled words attached to one of their topics.
-  const linked = useMemo(() => new Set(Object.values(themeLinks).flat()), [themeLinks]);
-  const mine = useMemo(() => items.filter((item) => isCustomId(item.id) || linked.has(item.id)), [items, linked]);
-  const groups = useMemo(() => groupByTheme(mine), [mine]);
+  // The learner's topics: added words plus the words they attached to a topic (a word may be in several topics).
+  const groups = useMemo(() => ownTopicGroups(customWords, themeLinks, byId), [customWords, themeLinks, byId]);
+  const mine = useMemo(() => {
+    const seen = new Set<string>();
+    return groups.flatMap((g) => g.items).filter((item) => (seen.has(item.id) ? false : (seen.add(item.id), true)));
+  }, [groups]);
   const communityTopics = useMemo(
     () => [...community.topics].filter((t) => !community.reported.includes(t.id)).sort((a, b) => b.createdAt - a.createdAt),
     [community.topics, community.reported],
@@ -158,7 +160,7 @@ export function CustomWordsScreen({ onNavigate }: { onNavigate: (tab: Tab) => vo
   const sharedIds = useMemo(() => new Set(Object.values(community.shared)), [community.shared]);
 
   function learnTopic(topic: CommunityTopic) {
-    const words = items.filter((item) => item.theme === topic.theme);
+    const words = topics.byTheme.get(topic.theme) ?? [];
     const session = buildSelectionSession(words, progress, ROUND_MAX, Date.now());
     if (!session) return;
     dispatch({ type: 'session/set', session });
@@ -509,7 +511,7 @@ export function CustomWordsScreen({ onNavigate }: { onNavigate: (tab: Tab) => vo
                       </div>
                       <Button variant="secondary" size="sm" className="mt-3 w-full" onClick={() => learnTopic(topic)}>
                         <TargetIcon size={16} />
-                        {roundLabel(items.filter((item) => item.theme === topic.theme).length)}
+                        {roundLabel((topics.byTheme.get(topic.theme) ?? []).length)}
                       </Button>
                     </li>
                   ))}

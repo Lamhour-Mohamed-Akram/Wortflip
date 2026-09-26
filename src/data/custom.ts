@@ -341,6 +341,62 @@ export function groupByTheme(items: readonly VocabularyItem[]): ThemeGroup[] {
     .sort((a, b) => a.theme.localeCompare(b.theme, 'de'));
 }
 
+/**
+ * Membership of words in topics: a word may sit in several topics (its own
+ * `theme` plus every link list that names it). `links` are the user's, the
+ * bundled and the community links merged.
+ */
+export interface TopicIndex {
+  /** Topic name -> words, sorted by topic name. */
+  byTheme: ReadonlyMap<string, VocabularyItem[]>;
+  /** Word id -> its topic names (own theme first). */
+  of: (id: string) => readonly string[];
+}
+
+export function buildTopicIndex(items: readonly VocabularyItem[], links: ThemeLinks): TopicIndex {
+  const byId = new Map(items.map((item) => [item.id, item]));
+  const themesById = new Map<string, string[]>();
+  const add = (id: string, theme: string) => {
+    const list = themesById.get(id) ?? [];
+    if (!list.includes(theme)) list.push(theme);
+    themesById.set(id, list);
+  };
+  for (const item of items) if (item.theme) add(item.id, item.theme);
+  for (const [theme, ids] of Object.entries(links)) for (const id of ids) if (byId.has(id)) add(id, theme);
+  const byTheme = new Map<string, VocabularyItem[]>();
+  for (const [id, themes] of themesById) {
+    const item = byId.get(id);
+    if (!item) continue;
+    for (const theme of themes) {
+      const list = byTheme.get(theme) ?? [];
+      list.push(item);
+      byTheme.set(theme, list);
+    }
+  }
+  const sorted = new Map([...byTheme.entries()].sort((a, b) => a[0].localeCompare(b[0], 'de')));
+  return { byTheme: sorted, of: (id) => themesById.get(id) ?? [] };
+}
+
+/** The learner's own topics: own words plus the words they attached (`links`), as groups. */
+export function ownTopicGroups(customWords: readonly VocabularyItem[], links: ThemeLinks, byId: ReadonlyMap<string, VocabularyItem>): ThemeGroup[] {
+  const groups = new Map<string, VocabularyItem[]>();
+  for (const item of customWords) {
+    const key = item.theme ?? NO_THEME;
+    groups.set(key, [...(groups.get(key) ?? []), item]);
+  }
+  for (const [theme, ids] of Object.entries(links)) {
+    const list = groups.get(theme) ?? [];
+    for (const id of ids) {
+      const item = byId.get(id);
+      if (item && !list.some((w) => w.id === id)) list.push(item);
+    }
+    if (list.length > 0) groups.set(theme, list);
+  }
+  return [...groups.entries()]
+    .map(([theme, list]) => ({ theme, items: list, levels: LEVELS.filter((level) => list.some((item) => item.level === level)) }))
+    .sort((a, b) => a.theme.localeCompare(b.theme, 'de'));
+}
+
 /** The file the learner downloads (and can import again or hand to the repo script). */
 export function exportCustomWords(items: readonly VocabularyItem[]): string {
   const clean = items.map((item) => {

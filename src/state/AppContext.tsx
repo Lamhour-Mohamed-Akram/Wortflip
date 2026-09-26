@@ -4,7 +4,8 @@ import { COMMUNITY_ENABLED, SYNC_INTERVAL_MS } from '../community/config';
 import { communityCatalogue } from '../community/merge';
 import { pendingTopics, shareAndMerge, shareErrorMessage } from '../community/share';
 import { dataset, itemById, type Level, type VocabularyItem } from '../data';
-import { applyThemeLinks } from '../data/custom';
+import { applyThemeLinks, buildTopicIndex, type ThemeLinks, type TopicIndex } from '../data/custom';
+import { themeLinks as bundledLinks } from '../data/vocabulary/themes';
 import { getLocalStorage, loadState, saveState, type AppState } from '../learning/storage';
 import { reducer, type Action } from './reducer';
 
@@ -17,11 +18,19 @@ interface AppContextValue {
   items: readonly VocabularyItem[];
   byId: ReadonlyMap<string, VocabularyItem>;
   itemsFor: (levels: readonly Level[]) => VocabularyItem[];
+  /** Which words belong to which topics (a word may be in several). */
+  topics: TopicIndex;
   /** Community sharing runs here; the screen only shows its state and can trigger a retry. */
   share: { sharing: string | null; error: string | null; retry: () => void };
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
+
+function mergeLinks(a: ThemeLinks, b: ThemeLinks): ThemeLinks {
+  const out: ThemeLinks = { ...a };
+  for (const [theme, ids] of Object.entries(b)) out[theme] = [...new Set([...(out[theme] ?? []), ...ids])];
+  return out;
+}
 
 const storage = getLocalStorage();
 const validIds: ReadonlySet<string> = new Set(itemById.keys());
@@ -40,14 +49,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const own = [...applyThemeLinks(dataset.items, themeLinks), ...customWords];
     ownRef.current = own;
     let items: readonly VocabularyItem[] = own;
+    let allLinks: ThemeLinks = mergeLinks(bundledLinks, themeLinks);
     if (showCommunity && community.topics.length > 0) {
       const extra = communityCatalogue(community.topics, own, new Set(community.reported));
       items = [...applyThemeLinks(own, extra.links), ...extra.items];
+      allLinks = mergeLinks(allLinks, extra.links);
     }
     const plain = items === own && customWords.length === 0 && Object.keys(themeLinks).length === 0;
     const byId = plain ? itemById : new Map(items.map((item) => [item.id, item]));
     const itemsFor = (levels: readonly Level[]) => items.filter((item) => levels.includes(item.level));
-    return { items, byId, itemsFor };
+    const topics = buildTopicIndex(items, allLinks);
+    return { items, byId, itemsFor, topics };
   }, [customWords, themeLinks, community, showCommunity]);
 
   // Pending shares go out by themselves: at start, whenever own topics change, and when the
