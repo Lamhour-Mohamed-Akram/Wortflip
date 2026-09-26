@@ -9,13 +9,15 @@ A static Progressive Web App: no account, no server, no requests to any API whil
 
 - **Tap** to flip the card: definition, example sentence and forms (plural, verb forms, comparison), all in simple German.
 - **Swipe** to rate: right = "Kenne ich", left = "Noch lernen". Buttons and keyboard work too.
-- **Spaced repetition** decides when a word comes back (Leitner boxes: 1, 3, 7, 14, 30 days).
+- **Spaced repetition** decides when a word comes back (Leitner boxes: 1, 3, 7, 14, 30 days). Daily rounds have 30 cards by default (10, 20 or 30 in Settings). A topic or a selection from the word list is learned in rounds of at most 30 cards; due and new words come first, so the next round continues where the last one stopped. The word list itself always shows every word of a topic (a topic holds up to 100).
 - **4593 words** in five levels: 627 hand-written (A1 193, A2 147, B1 144, B2 71, C1 72) plus 3966 imported from Wiktionary and Tatoeba. The A1 to B1 imports were selected with the Goethe-Institut word lists (A1 409, A2 472, B1 1499); the B2 and C1 imports (714 and 872) were selected by word frequency, so those two levels are approximate. Levels can be combined freely.
 - **English translation**: the back of every card shows a short translation from the German Wiktionary (every word has one; about 50 come from a small hand-written list). It can be switched off in Settings for learners who want to stay fully in German.
+- **Own words from any AI**: pick a level and a topic ("Beim Arzt"), copy the generated prompt into ChatGPT, Claude, Gemini or any other assistant, paste the JSON answer back, and the words become normal cards with translation and topic chip. They are stored on the device, can be exported and imported as a file, and the same file can be added to the repository for everyone with `node scripts/import-custom.mjs`.
+- **Community topics**: a new topic is shared automatically (a retry button appears when the device was offline). It lands in a free Supabase table and every other learner sees it in their word list within minutes, cached for offline use. The same topic name and level is one community topic: new words are merged into it and the sharer receives the words it lacked. Offensive words are refused in the app and in the database; shared topics are marked as AI-generated and unchecked; three reports from different devices hide a topic, and the whole community part can be switched off in Settings.
 - **Word list with search**: filter by level and word type, search even without umlauts ("gefuhl" finds "Gefühl"), and learn the current selection. Search runs entirely in the browser over the bundled data; nothing is looked up online and nothing counts against hosting limits.
 - **Offline and installable**: app shell, vocabulary and fonts are cached by a service worker.
 - **Add to home screen**: an install card triggers the native install prompt where the browser supports it (Android, Chrome and Edge on desktop) and shows step-by-step instructions on iPhone and iPad, matched to the browser in use (Safari, Chrome, Edge, Firefox).
-- **Everything local**: progress, streak and statistics live only in `localStorage`.
+- **Everything local**: progress, streak and statistics live only in `localStorage`. The only thing that ever leaves the device is a topic the learner shares with the community.
 
 ## Screenshots
 
@@ -202,6 +204,23 @@ What the import can and cannot do:
 - Wiktionary definitions are written for adults, not in simple learner German, and the first sense is not always the everyday one (for "Bahn" the physics meaning comes before the railway). To improve an imported card, write the word into one of the level files; the next import skips it.
 - The shipped import (3966 entries) combines two runs. First the Goethe lists as the selection for A1 to B1 (2380 entries, `--lemma-only` so that a list word is never resolved through an inflected form: "heute" must not become the verb "heuen"); words that already exist hand-written were skipped. Then the frequency mode for B2 and C1 (1586 entries): ranks 3000 to about 7700 of the German 50k list from the [FrequencyWords](https://github.com/hermitdave/FrequencyWords) project (derived from OpenSubtitles), split at rank 5500. Only the ranks are used for the selection; nothing from that list is copied into the dataset.
 - The plain frequency mode occasionally yields rare base forms (such as "wassern" instead of "Wasser"). `--strict` therefore only accepts words whose base form is itself frequent and at least four letters long, and skips interjections, entries whose Wiktionary definition marks them as vulgar or derogatory, stub definitions, and words without an English translation table (mostly first names, English words and rare derivations). Frequency is only a rough proxy for CEFR levels, so the B2 and C1 assignments are approximate; move a word into a hand-written level file to fix it.
+
+### Own words and themed imports
+
+The screen **Mehr → Eigene Wörter** lists the learner's topics and the community topics; **Neues Thema hinzufügen** opens a five-step flow: topic, number of words (10 to 100), level, the prompt to copy (`src/data/custom.ts`, `buildPrompt`), and the paste box. The step is remembered, so after the trip to the AI the app reopens on the paste step. The answer is validated by `parseCustomWords`: word, word type (English keys or German labels), level, meaning and example are required, nouns get article and plural, verbs and adjectives their forms, and everything that already exists in the dataset or in the same answer is skipped. New words get ids starting with `custom-`, live in `localStorage` next to the progress, and take part in the daily rounds like every other word. Words the app already has are not added twice: they join the topic instead (stored as topic links), so "Thema lernen" covers the whole list the AI produced. The Words screen shows a topic filter row once topics exist. Export writes a JSON file with one entry per word (including level and topic); import reads that file back on another device.
+
+To make a topic part of the app for everyone, run the same file through the repository script:
+
+```bash
+node scripts/import-custom.mjs ~/Downloads/wortflip-eigene-woerter-2026-09-26.json          # export file, levels and topics inside
+node scripts/import-custom.mjs answer.json --level B1 --theme "Im Büro" --dry-run             # raw AI answer, level and topic from the flags
+```
+
+It validates with the same rules, adds the new words to `src/data/vocabulary/themes.json`, and records words that already exist anywhere in the dataset as topic links in the same file, so the whole topic (new and known words) is bundled for every user. Check the AI output before committing it; the English translation is taken from the entry.
+
+### Community topics (Supabase)
+
+Sharing uses a Supabase project on the free plan: `supabase/schema.sql` creates the `topics` and `topic_reports` tables, the validation trigger (entry shape, offensive-word check, at most 5 topics per device and day, 200 per day overall), the `share_topic` function (merges into an existing topic with the same name and level, otherwise inserts), the report trigger (three reports hide a topic) and the row level security policies (the anon key can only read visible topics, call `share_topic` and insert reports). Run it once in the SQL editor of your project and put the project URL and anon key into `src/community/config.ts`; an empty URL disables the community part. The app talks to the REST endpoint directly (`src/community/api.ts`), syncs at most every ten minutes, keeps the topics in `localStorage`, and never blocks on the network: offline or paused projects simply keep the cached topics. Moderation happens in the Supabase dashboard (set `hidden` or delete a row). Free Supabase projects pause after seven days without a request; `netlify/functions/keepalive.mts` is a scheduled Netlify Function that reads one row once a day, so the project stays awake at no cost.
 
 For very large datasets a dynamic import (`import('./vocabulary/large')`) keeps the data in its own, still precached chunk.
 

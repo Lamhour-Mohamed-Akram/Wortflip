@@ -11,3 +11,6 @@
   [headers.values]
     Cache-Control = "no-cache"
 
+# Scheduled function that pings Supabase once a day (see netlify/functions/keepalive.mts).
+[functions]
+  directory = "netlify/functions"

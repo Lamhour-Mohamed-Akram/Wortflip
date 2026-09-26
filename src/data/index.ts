@@ -1,6 +1,8 @@
 import type { Level, VocabularyDataset, VocabularyItem, VocabularySource, WordType } from './types';
 import { vocabulary } from './vocabulary';
 import { importedSources, importedVocabulary } from './vocabulary/imported';
+import { themeLinks, themedVocabulary } from './vocabulary/themes';
+import { applyThemeLinks } from './custom';
 import translationsFile from './vocabulary/translations.json';
 
 export type { Article, Level, VocabularyDataset, VocabularyItem, VocabularySource, WordType } from './types';
@@ -38,9 +40,12 @@ export const dataset: VocabularyDataset = {
     importedVocabulary.length === 0
       ? `Alle ${vocabulary.length} Einträge wurden von Hand für Wortflip geschrieben. Sie stammen aus keiner externen Quelle.`
       : `${vocabulary.length} Einträge wurden von Hand für Wortflip geschrieben. ${importedVocabulary.length} Einträge wurden mit dem ` +
-        'Import-Skript aus den unten genannten Quellen übernommen. Die Quelle jedes importierten Eintrags steht in der Wortliste.',
+        'Import-Skript aus den unten genannten Quellen übernommen. Die Quelle jedes importierten Eintrags steht in der Wortliste.' +
+        (themedVocabulary.length > 0
+          ? ` ${themedVocabulary.length} Einträge zu einzelnen Themen wurden mit einer KI erzeugt und von Hand geprüft.`
+          : ''),
   sources: importedSources,
-  items: withTranslations([...vocabulary, ...importedVocabulary]),
+  items: applyThemeLinks(withTranslations([...vocabulary, ...importedVocabulary, ...themedVocabulary]), themeLinks),
 };
 
 /**

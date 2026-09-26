@@ -42,6 +42,8 @@ export interface VocabularyItem {
   exampleDe: string;
   /** Optional English translation of the first sense (shown only when enabled in the settings). */
   translationEn?: string;
+  /** Topic of a word added by the learner or a themed import, e.g. "Beim Arzt". */
+  theme?: string;
   verbForms?: VerbForms;
   adjectiveForms?: AdjectiveForms;
   /** Ids of `VocabularyDataset.sources` this entry was taken from. Omit for hand-written entries. */

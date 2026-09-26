@@ -1,4 +1,6 @@
 import { dataset, pluralForm, type VocabularyItem } from '../data';
+import { CUSTOM_SOURCE_ID } from '../data/custom';
+import { COMMUNITY_SOURCE_ID } from '../community/merge';
 import { cn } from '../lib/cn';
 import { useApp } from '../state/AppContext';
 
@@ -59,7 +61,9 @@ function sourceName(id: string): string {
 /** "Wörterbuch: Deutsches Wiktionary (CC BY-SA 4.0) · Beispiel: Tatoeba (CC BY 2.0 FR), Autor: xyz" */
 function attribution(item: VocabularyItem, withTranslation: boolean): string | null {
   const parts: string[] = [];
-  const definitionIds = (item.sourceIds ?? []).filter((id) => id !== item.exampleSource?.sourceId);
+  // The learner's own words need no credit line; community words say where they come from.
+  const definitionIds = (item.sourceIds ?? []).filter((id) => id !== item.exampleSource?.sourceId && id !== CUSTOM_SOURCE_ID && id !== COMMUNITY_SOURCE_ID);
+  if (item.sourceIds?.includes(COMMUNITY_SOURCE_ID)) parts.push('Von einem Lernenden geteilt, mit KI erstellt und nicht geprüft');
   if (definitionIds.length > 0) parts.push(`Wörterbuch: ${definitionIds.map(sourceName).join(', ')}`);
   // Hand-written words carry no dictionary source, but their translation still comes from the Wiktionary.
   if (withTranslation && !definitionIds.includes(TRANSLATION_SOURCE)) parts.push(`Übersetzung: ${sourceName(TRANSLATION_SOURCE)}`);

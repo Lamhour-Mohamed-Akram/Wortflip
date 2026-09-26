@@ -1,5 +1,8 @@
 import { LEVELS } from '../data';
-import type { Level } from '../data/types';
+import type { Level, VocabularyItem } from '../data/types';
+import { normalizeCustomItem, type ThemeLinks } from '../data/custom';
+import { communityItemId } from '../community/api';
+import { createCommunityState, type CommunityState, type CommunityTopic } from '../community/types';
 import { MASTERED_BOX } from './scheduler';
 import { createStats } from './stats';
 import { createStreak } from './streak';
@@ -19,6 +22,12 @@ export const STORAGE_KEY = 'wortflip.state.v1';
 export interface AppState {
   version: 1;
   settings: Settings;
+  /** Words the learner added from an AI answer ("Eigene Wörter"). Their ids start with "custom-". */
+  customWords: VocabularyItem[];
+  /** Bundled words the learner attached to one of their topics (topic name -> ids). */
+  themeLinks: ThemeLinks;
+  /** Topics shared by other learners (cached) and what this device shared or reported. */
+  community: CommunityState;
   progress: Record<string, WordProgress>;
   streak: StreakState;
   stats: Stats;
@@ -37,13 +46,16 @@ const WORD_STATUSES: readonly WordStatus[] = ['new', 'learning', 'mastered'];
 const SESSION_KINDS: readonly SessionKind[] = ['daily', 'extra', 'focus', 'custom'];
 
 export function defaultSettings(): Settings {
-  return { levels: ['A1'], sessionSize: 10, showTranslation: true, onboarded: false };
+  return { levels: ['A1'], sessionSize: 30, showTranslation: true, showCommunity: true, onboarded: false };
 }
 
 export function defaultState(): AppState {
   return {
     version: 1,
     settings: defaultSettings(),
+    customWords: [],
+    themeLinks: {},
+    community: createCommunityState(),
     progress: {},
     streak: createStreak(),
     stats: createStats(),
@@ -131,6 +143,7 @@ function sanitizeSettings(raw: unknown): Settings {
     sessionSize: isOneOf(SESSION_SIZES, raw.sessionSize) ? raw.sessionSize : defaults.sessionSize,
     // On by default, also for states saved before the setting existed.
     showTranslation: raw.showTranslation !== false,
+    showCommunity: raw.showCommunity !== false,
     onboarded: raw.onboarded === true,
   };
 }
@@ -207,16 +220,89 @@ function sanitizeSession(raw: unknown, validIds: ReadonlySet<string>): SessionSt
   };
 }
 
+function sanitizeCustomWords(raw: unknown): VocabularyItem[] {
+  if (!Array.isArray(raw)) return [];
+  const words: VocabularyItem[] = [];
+  const ids = new Set<string>();
+  for (const entry of raw) {
+    const item = normalizeCustomItem(entry);
+    if (item && !ids.has(item.id)) {
+      ids.add(item.id);
+      words.push(item);
+    }
+  }
+  return words;
+}
+
+function sanitizeThemeLinks(raw: unknown, validIds: ReadonlySet<string>): ThemeLinks {
+  const links: ThemeLinks = {};
+  if (!isRecord(raw)) return links;
+  for (const [theme, ids] of Object.entries(raw)) {
+    const name = theme.trim().slice(0, 40);
+    if (!name || !Array.isArray(ids)) continue;
+    const clean = [...new Set(ids.filter((id): id is string => typeof id === 'string' && validIds.has(id)))];
+    if (clean.length > 0) links[name] = clean;
+  }
+  return links;
+}
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function sanitizeTopic(raw: unknown): CommunityTopic | null {
+  if (!isRecord(raw) || typeof raw.id !== 'string' || !UUID.test(raw.id)) return null;
+  const level = isOneOf(LEVELS, raw.level) ? raw.level : null;
+  const theme = typeof raw.theme === 'string' ? raw.theme.trim().slice(0, 40) : '';
+  if (!level || !theme || !Array.isArray(raw.items)) return null;
+  const items: VocabularyItem[] = [];
+  for (const entry of raw.items) {
+    const item = normalizeCustomItem(entry, { level, theme });
+    if (item) items.push({ ...item, id: communityItemId(raw.id, item.word, item.type), sourceIds: ['community'] });
+  }
+  if (items.length === 0) return null;
+  return { id: raw.id, theme, level, items, createdAt: isTimestamp(raw.createdAt) ? raw.createdAt : 0 };
+}
+
+function sanitizeCommunity(raw: unknown): CommunityState {
+  const state = createCommunityState();
+  if (!isRecord(raw)) return state;
+  if (Array.isArray(raw.topics)) {
+    const ids = new Set<string>();
+    for (const entry of raw.topics) {
+      const topic = sanitizeTopic(entry);
+      if (topic && !ids.has(topic.id)) {
+        ids.add(topic.id);
+        state.topics.push(topic);
+      }
+    }
+  }
+  if (isTimestamp(raw.syncedAt)) state.syncedAt = raw.syncedAt;
+  if (Array.isArray(raw.reported)) state.reported = raw.reported.filter((id): id is string => typeof id === 'string' && UUID.test(id));
+  if (isRecord(raw.shared)) {
+    for (const [theme, id] of Object.entries(raw.shared)) {
+      if (theme.trim() && typeof id === 'string' && UUID.test(id)) state.shared[theme.trim().slice(0, 40)] = id;
+    }
+  }
+  return state;
+}
+
 export function sanitizeState(raw: unknown, validIds: ReadonlySet<string>): AppState {
   if (!isRecord(raw)) return defaultState();
   // Future schema versions would be migrated here before sanitizing.
+  const customWords = sanitizeCustomWords(raw.customWords);
+  const community = sanitizeCommunity(raw.community);
+  // Progress and sessions may refer to the learner's own and to community words as well.
+  const extraIds = [...customWords.map((item) => item.id), ...community.topics.flatMap((topic) => topic.items.map((item) => item.id))];
+  const knownIds = extraIds.length > 0 ? new Set([...validIds, ...extraIds]) : validIds;
   return {
     version: 1,
     settings: sanitizeSettings(raw.settings),
-    progress: sanitizeProgress(raw.progress, validIds),
+    customWords,
+    themeLinks: sanitizeThemeLinks(raw.themeLinks, validIds),
+    community,
+    progress: sanitizeProgress(raw.progress, knownIds),
     streak: sanitizeStreak(raw.streak),
     stats: sanitizeStats(raw.stats),
-    session: sanitizeSession(raw.session, validIds),
+    session: sanitizeSession(raw.session, knownIds),
   };
 }
 

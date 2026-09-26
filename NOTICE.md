@@ -8,3 +8,5 @@ sentences from Tatoeba (CC BY 2.0 FR, https://creativecommons.org/licenses/by/2.
 with the author of each sentence named in the file. The bundled fonts Rubik and
 Space Mono are licensed under the SIL Open Font License 1.1
 (see src/assets/fonts/LICENSE.md).
+
+Topics shared through the community feature are written by learners with the help of an AI assistant. They are not reviewed by the author and are shown with that notice in the app; report a topic in the app or contact the author to have it removed.

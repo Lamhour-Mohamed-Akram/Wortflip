@@ -2,10 +2,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { Button } from '../components/Button';
 import { ChoiceGroup, type Choice } from '../components/ChoiceGroup';
 import { EmptyState } from '../components/EmptyState';
-import { ExternalLinkIcon, SearchIcon, TargetIcon } from '../components/Icons';
+import { ExternalLinkIcon, SearchIcon, SparkleIcon, TargetIcon } from '../components/Icons';
+import { groupByTheme } from '../data/custom';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { WordRow } from '../components/WordRow';
-import { dataset, LEVELS, type Level, type VocabularyItem, type WordType } from '../data';
+import { Chip } from '../components/Chip';
+import { LEVELS, type Level, type VocabularyItem, type WordType } from '../data';
 import type { Tab } from '../hooks/useTab';
 import { buildSelectionSession } from '../learning/session';
 import { cn } from '../lib/cn';
@@ -28,19 +30,27 @@ const TYPE_FILTERS: { value: TypeFilter; label: string }[] = [
 const REST_TYPES: readonly WordType[] = ['preposition', 'conjunction', 'other'];
 const PAGE_SIZE = 80;
 
-// Built once: the folded text every word is matched against (no network involved).
-const INDEX = dataset.items.map((item) => ({
-  item,
-  word: normalizeSearch(item.word.replace(/^sich /, '')),
-  text: normalizeSearch(`${item.word} ${item.plural ?? ''} ${item.definitionDe}`),
-}));
+interface IndexEntry {
+  item: VocabularyItem;
+  word: string;
+  text: string;
+}
 
-const LEVEL_COUNTS = Object.fromEntries(LEVELS.map((level) => [level, dataset.items.filter((i) => i.level === level).length])) as Record<Level, number>;
+/** The folded text every word is matched against (no network involved). Rebuilt only when own words change. */
+function buildIndex(items: readonly VocabularyItem[]): IndexEntry[] {
+  return items.map((item) => ({
+    item,
+    word: normalizeSearch(item.word.replace(/^sich /, '')),
+    text: normalizeSearch(`${item.word} ${item.plural ?? ''} ${item.definitionDe} ${item.theme ?? ''}`),
+  }));
+}
 
-const LEVEL_CHOICES: readonly Choice<LevelFilter>[] = [
-  { value: 'all', label: 'Alle', hint: String(dataset.items.length) },
-  ...LEVELS.map((level) => ({ value: level, label: level, hint: String(LEVEL_COUNTS[level]) })),
-];
+function levelChoices(items: readonly VocabularyItem[]): Choice<LevelFilter>[] {
+  return [
+    { value: 'all', label: 'Alle', hint: String(items.length) },
+    ...LEVELS.map((level) => ({ value: level, label: level, hint: String(items.filter((i) => i.level === level).length) })),
+  ];
+}
 
 function matchesType(item: VocabularyItem, filter: TypeFilter): boolean {
   if (filter === 'all') return true;
@@ -49,10 +59,21 @@ function matchesType(item: VocabularyItem, filter: TypeFilter): boolean {
 }
 
 export function WordsScreen({ onNavigate }: { onNavigate: (tab: Tab) => void }) {
-  const { state, dispatch } = useApp();
+  const { state, dispatch, items } = useApp();
   const { progress, settings } = state;
+  const index = useMemo(() => buildIndex(items), [items]);
+  const levelOptions = useMemo(() => levelChoices(items), [items]);
   const [level, setLevel] = useState<LevelFilter>(settings.levels.length === 1 ? (settings.levels[0] ?? 'all') : 'all');
   const [type, setType] = useState<TypeFilter>('all');
+  const [theme, setTheme] = useState<string>('all');
+  const themeGroups = useMemo(() => groupByTheme(items.filter((item) => item.theme)), [items]);
+  const themes = useMemo(() => themeGroups.map((g) => g.theme), [themeGroups]);
+  const [themeQuery, setThemeQuery] = useState('');
+  const themeQ = normalizeSearch(themeQuery);
+  const shownThemeGroups = useMemo(
+    () => (themeQ ? themeGroups.filter((g) => normalizeSearch(g.theme).includes(themeQ) || g.levels.some((l) => l.toLowerCase() === themeQ)) : themeGroups),
+    [themeGroups, themeQ],
+  );
   const [query, setQuery] = useState('');
   const [shown, setShown] = useState(PAGE_SIZE);
   const q = normalizeQuery(query);
@@ -60,9 +81,10 @@ export function WordsScreen({ onNavigate }: { onNavigate: (tab: Tab) => void }) 
 
   const results = useMemo(() => {
     const scored: { item: VocabularyItem; score: number }[] = [];
-    for (const entry of INDEX) {
+    for (const entry of index) {
       if (level !== 'all' && entry.item.level !== level) continue;
       if (!matchesType(entry.item, type)) continue;
+      if (theme !== 'all' && entry.item.theme !== theme) continue;
       let score = 0;
       if (q) {
         if (entry.word.startsWith(q)) score = 0;
@@ -74,12 +96,19 @@ export function WordsScreen({ onNavigate }: { onNavigate: (tab: Tab) => void }) 
     }
     scored.sort((a, b) => a.score - b.score || a.item.word.localeCompare(b.item.word, 'de'));
     return scored.map((s) => s.item);
-  }, [level, type, q]);
+  }, [index, level, type, theme, q]);
 
-  useEffect(() => setShown(PAGE_SIZE), [level, type, q]);
+  useEffect(() => setShown(PAGE_SIZE), [level, type, theme, q]);
+  // A deleted topic must not keep filtering.
+  useEffect(() => {
+    if (theme !== 'all' && !themes.includes(theme)) setTheme('all');
+  }, [theme, themes]);
 
+  // A selection round takes at most 30 cards (at least the daily round size); the list itself shows everything.
+  const selectionSize = Math.max(settings.sessionSize, 30);
   const learnSelection = () => {
-    const session = buildSelectionSession(results, progress, settings.sessionSize, Date.now());
+    // A selection round takes at least 30 cards, whatever the daily round size is.
+    const session = buildSelectionSession(results, progress, selectionSize, Date.now());
     if (!session) return;
     dispatch({ type: 'session/set', session });
     onNavigate('lernen');
@@ -87,7 +116,12 @@ export function WordsScreen({ onNavigate }: { onNavigate: (tab: Tab) => void }) 
 
   return (
     <div className="px-5 pb-6 pt-5">
-      <ScreenHeader eyebrow={`${results.length} von ${pluralize(dataset.items.length, 'Wort', 'Wörtern')}`} title="Wortschatz" />
+      <ScreenHeader eyebrow={`${results.length} von ${pluralize(items.length, 'Wort', 'Wörtern')}`} title="Wortschatz" />
+
+      <Button variant="secondary" className="mb-4 w-full" onClick={() => onNavigate('eigene')}>
+        <SparkleIcon size={20} />
+        {state.customWords.length === 0 ? 'Eigene Wörter mit KI hinzufügen' : 'Eigene Wörter verwalten'}
+      </Button>
 
       <label className="relative block">
         <span className="sr-only">Wort suchen</span>
@@ -106,7 +140,7 @@ export function WordsScreen({ onNavigate }: { onNavigate: (tab: Tab) => void }) 
       <p className="mt-1.5 text-xs text-gray">Die Suche läuft nur auf deinem Gerät, ohne Internet und ohne Server.</p>
 
       <div className="mt-4">
-        <ChoiceGroup name="words-level" legend="Level" options={LEVEL_CHOICES} value={level} onChange={setLevel} columns={3} />
+        <ChoiceGroup name="words-level" legend="Level" options={levelOptions} value={level} onChange={setLevel} columns={3} />
       </div>
 
       <div className="mt-4" role="group" aria-label="Wortart">
@@ -132,10 +166,61 @@ export function WordsScreen({ onNavigate }: { onNavigate: (tab: Tab) => void }) 
         </div>
       </div>
 
+      {themes.length > 0 && (
+        <div className="mt-4" role="group" aria-label="Thema">
+          <p className="mb-2 font-mono text-[11px] font-bold uppercase tracking-wider text-gray">Thema</p>
+          {themes.length > 0 && (
+            <input
+              type="search"
+              value={themeQuery}
+              onChange={(event) => setThemeQuery(event.target.value)}
+              placeholder="Thema oder Level suchen"
+              aria-label="Thema suchen"
+              className="mb-2 min-h-10 w-full rounded-xl border-2 border-black bg-white px-3 text-sm font-bold placeholder:font-medium placeholder:text-gray focus:outline-none focus-visible:outline-3 focus-visible:outline-dashed focus-visible:outline-offset-3 focus-visible:outline-black"
+            />
+          )}
+          <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none]">
+            {[{ theme: 'all', levels: [] as Level[] }, ...shownThemeGroups].map((group) => {
+              const value = group.theme;
+              const active = value === theme;
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => {
+                    setTheme(value);
+                    // A topic spans levels: do not let a level filter hide part of it.
+                    if (value !== 'all') setLevel('all');
+                  }}
+                  className={cn(
+                    'flex shrink-0 items-center gap-1.5 rounded-xl border-2 border-black px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider transition-colors',
+                    active ? 'bg-black text-yellow' : 'bg-yellow-light hover:bg-yellow',
+                  )}
+                >
+                  {value === 'all' ? 'Alle' : value}
+                  {group.levels.length > 0 && (
+                    <span className={cn('rounded-md px-1 text-[10px]', active ? 'bg-yellow text-black' : 'bg-black text-yellow')}>{group.levels.join('/')}</span>
+                  )}
+                </button>
+              );
+            })}
+            {themeQ && shownThemeGroups.length === 0 && <span className="py-1.5 text-xs text-gray">Kein Thema gefunden.</span>}
+            <button
+              type="button"
+              onClick={() => onNavigate('eigene')}
+              className="shrink-0 rounded-xl border-2 border-dashed border-black bg-white px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider transition-colors hover:bg-yellow-light"
+            >
+              + Thema
+            </button>
+          </div>
+        </div>
+      )}
+
       {results.length > 0 && (
         <Button className="mt-4 w-full" onClick={learnSelection}>
           <TargetIcon size={22} />
-          Auswahl lernen ({pluralize(Math.min(results.length, settings.sessionSize), 'Karte', 'Karten')})
+          Auswahl lernen ({results.length > selectionSize ? `${selectionSize} von ${results.length} Karten` : pluralize(results.length, 'Karte', 'Karten')})
         </Button>
       )}
 
@@ -168,7 +253,13 @@ export function WordsScreen({ onNavigate }: { onNavigate: (tab: Tab) => void }) 
         <>
           <ul className="mt-4 flex flex-col gap-3" aria-label="Wörterliste">
             {results.slice(0, shown).map((item) => (
-              <WordRow key={item.id} item={item} progress={progress[item.id]} now={now} />
+              <WordRow
+                key={item.id}
+                item={item}
+                progress={progress[item.id]}
+                now={now}
+                chips={item.theme ? <Chip variant="yellow">{item.theme}</Chip> : undefined}
+              />
             ))}
           </ul>
           {shown < results.length && (

@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 
-export type Tab = 'lernen' | 'woerter' | 'fortschritt' | 'schwierig' | 'einstellungen';
+export type Tab = 'lernen' | 'woerter' | 'fortschritt' | 'schwierig' | 'einstellungen' | 'eigene';
 
-export const TABS: readonly Tab[] = ['lernen', 'woerter', 'fortschritt', 'schwierig', 'einstellungen'];
+/** Every routable screen; "eigene" (own words) is reached from the settings, not from the bottom bar. */
+export const TABS: readonly Tab[] = ['lernen', 'woerter', 'fortschritt', 'schwierig', 'einstellungen', 'eigene'];
 
 function readTab(): Tab {
   const hash = window.location.hash.replace(/^#\/?/, '');

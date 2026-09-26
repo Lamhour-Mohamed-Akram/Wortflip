@@ -47,8 +47,9 @@ describe('storage', () => {
       VALID_IDS,
     );
     expect(state.settings.levels).toEqual(['A2']);
-    expect(state.settings.sessionSize).toBe(10);
+    expect(state.settings.sessionSize).toBe(30);
     expect(state.settings.showTranslation).toBe(true); // invalid value falls back to the default (on)
+    expect(state.customWords).toEqual([]);
     expect(state.settings.onboarded).toBe(true);
     expect(Object.keys(state.progress)).toEqual(['tisch']);
     expect(state.streak).toEqual({ current: 3, best: 3, lastActiveDay: null });
@@ -64,6 +65,30 @@ describe('storage', () => {
     state.progress.tisch = { id: 'tisch', status: 'learning', box: 2, dueAt: 10, lastReviewedAt: 9, correct: 2, incorrect: 1, streak: 2 };
     expect(saveState(storage, state)).toBe(true);
     expect(loadState(storage, VALID_IDS)).toEqual(state);
+  });
+});
+
+describe('custom words in storage', () => {
+  it('keeps valid custom words and the progress that refers to them', () => {
+    const raw = {
+      version: 1,
+      settings: { levels: ['A1'], sessionSize: 10, onboarded: true },
+      customWords: [
+        { id: 'custom-praxis', word: 'Praxis', article: 'die', type: 'noun', level: 'A2', definitionDe: 'x', exampleDe: 'y', theme: 'Arzt' },
+        { id: 'custom-praxis', word: 'Praxis', type: 'noun', level: 'A2', definitionDe: 'x', exampleDe: 'y' },
+        { word: 'kaputt', type: 'noun', level: 'A2', definitionDe: '', exampleDe: 'y' },
+        'junk',
+      ],
+      themeLinks: { Arzt: ['tisch', 'nope', 'tisch', 7], '  ': ['tisch'] },
+      progress: { 'custom-praxis': { id: 'custom-praxis', status: 'learning', box: 1, dueAt: 1, lastReviewedAt: 1, correct: 1, incorrect: 0, streak: 1 } },
+      session: { kind: 'custom', queue: ['custom-praxis'], total: 1, correct: 0, incorrect: 0, startedAt: 1 },
+    };
+    const state = sanitizeState(raw, new Set(['tisch']));
+    expect(state.customWords.map((w) => w.id)).toEqual(['custom-praxis']);
+    expect(state.customWords[0]?.theme).toBe('Arzt');
+    expect(Object.keys(state.progress)).toEqual(['custom-praxis']);
+    expect(state.session?.queue).toEqual(['custom-praxis']);
+    expect(state.themeLinks).toEqual({ Arzt: ['tisch'] });
   });
 });
 

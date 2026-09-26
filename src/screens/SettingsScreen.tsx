@@ -1,5 +1,5 @@
 import { ChoiceGroup, type Choice } from '../components/ChoiceGroup';
-import { BadgeIcon, CodeIcon, ExternalLinkIcon, KeyboardIcon, WarningIcon } from '../components/Icons';
+import { BadgeIcon, CodeIcon, ExternalLinkIcon, KeyboardIcon, SparkleIcon, WarningIcon } from '../components/Icons';
 import { InstallCard } from '../components/InstallCard';
 import { LevelPicker } from '../components/LevelPicker';
 import { ResetButton } from '../components/ResetButton';
@@ -10,6 +10,10 @@ import { SESSION_SIZES } from '../learning/storage';
 import type { SessionSize } from '../learning/types';
 import { pluralize } from '../lib/format';
 import { useApp } from '../state/AppContext';
+import type { Tab } from '../hooks/useTab';
+import { Button } from '../components/Button';
+import { groupByTheme } from '../data/custom';
+import { COMMUNITY_ENABLED } from '../community/config';
 import { AUTHOR } from '../author';
 
 const SIZE_CHOICES: readonly Choice<SessionSize>[] = SESSION_SIZES.map((size) => ({
@@ -26,15 +30,22 @@ const SHORTCUTS = [
   { keys: ['→'], action: 'Kenne ich' },
 ];
 
+const COMMUNITY_CHOICES: Choice<'off' | 'on'>[] = [
+  { value: 'off', label: 'Aus', hint: 'nur eigene' },
+  { value: 'on', label: 'An', hint: 'von allen' },
+];
+
 const TRANSLATION_CHOICES: Choice<'off' | 'on'>[] = [
   { value: 'off', label: 'Aus', hint: 'nur Deutsch' },
   { value: 'on', label: 'An', hint: 'auf der Rückseite' },
 ];
 
-export function SettingsScreen() {
+export function SettingsScreen({ onNavigate }: { onNavigate: (tab: Tab) => void }) {
   const { state, dispatch, persistent } = useApp();
   const { settings } = state;
   const reviewedCount = Object.keys(state.progress).length;
+  const ownCount = state.customWords.length + Object.values(state.themeLinks).flat().length;
+  const ownThemes = new Set([...groupByTheme(state.customWords).map((g) => g.theme), ...Object.keys(state.themeLinks)]).size;
 
   return (
     <div className="px-5 pb-6 pt-5">
@@ -72,11 +83,42 @@ export function SettingsScreen() {
         <p className="mt-3 text-xs leading-snug text-gray">
           Zeigt auf der Rückseite eine kurze englische Übersetzung aus dem Wiktionary. Schalte sie aus, wenn du ganz auf Deutsch denken willst.
         </p>
+        {COMMUNITY_ENABLED && (
+          <>
+            <div className="mt-4">
+              <ChoiceGroup
+                name="settings-community"
+                legend="Themen aus der Community"
+                options={COMMUNITY_CHOICES}
+                value={settings.showCommunity ? 'on' : 'off'}
+                onChange={(value) => dispatch({ type: 'settings/showCommunity', showCommunity: value === 'on' })}
+              />
+            </div>
+            <p className="mt-3 text-xs leading-snug text-gray">
+              Themen, die andere Lernende geteilt haben, erscheinen in der Wortliste und beim Lernen. Sie sind mit KI erstellt und nicht geprüft.
+            </p>
+          </>
+        )}
+      </Window>
+
+      <Window title="Eigene Wörter" className="mt-4">
+        <p className="text-sm leading-snug">
+          Lass dir von einer KI Wörter zu deinem Thema schreiben und lerne sie hier wie alle anderen, mit Übersetzung.
+        </p>
+        <p className="mt-2 text-xs text-gray">
+          {ownCount === 0
+            ? 'Noch keine eigenen Wörter.'
+            : `${pluralize(ownCount, 'Wort', 'Wörter')} in ${pluralize(ownThemes, 'Thema', 'Themen')}.`}
+        </p>
+        <Button variant="secondary" className="mt-4 w-full" onClick={() => onNavigate('eigene')}>
+          <SparkleIcon size={18} />
+          {ownCount === 0 ? 'Wörter mit KI hinzufügen' : 'Eigene Wörter verwalten'}
+        </Button>
       </Window>
 
       <Window title="Daten" className="mt-4">
         <p className="text-sm leading-snug">
-          Alles wird nur lokal in deinem Browser gespeichert: ohne Konto, ohne Server, ohne Tracking.
+          Dein Lernfortschritt wird nur lokal in deinem Browser gespeichert: ohne Konto, ohne Tracking. Nur Themen, die du teilst, gehen an die Community.
         </p>
         {!persistent && (
           <p className="mt-2 flex items-start gap-2 rounded-xl border-2 border-black bg-yellow-light p-2 text-xs font-bold">
@@ -92,7 +134,7 @@ export function SettingsScreen() {
           <ResetButton mode="all" variant="dark" className="w-full" />
         </div>
         <p className="mt-2 text-xs leading-snug text-gray">
-          „Fortschritt zurücksetzen“ behält Level und Rundengröße. „Alles löschen“ bringt dich zurück zum Start.
+          „Fortschritt zurücksetzen“ behält Level, Rundengröße und eigene Wörter. „Alles löschen“ entfernt auch die eigenen Wörter und bringt dich zurück zum Start.
         </p>
       </Window>
 

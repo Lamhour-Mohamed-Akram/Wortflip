@@ -6,9 +6,16 @@ import { WordDetails } from './WordDetails';
 export function FlashcardFront({ item }: { item: VocabularyItem }) {
   return (
     <div className="flex h-full flex-col p-5">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center gap-2">
         <Chip variant="solid">{item.level}</Chip>
-        <Chip variant="outline">{WORD_TYPE_LABELS[item.type]}</Chip>
+        {item.theme && (
+          <Chip variant="yellow" className="min-w-0 max-w-[45%] truncate">
+            {item.theme}
+          </Chip>
+        )}
+        <Chip variant="outline" className="ml-auto">
+          {WORD_TYPE_LABELS[item.type]}
+        </Chip>
       </div>
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-1 text-center">
         {item.article && <span className="font-mono text-xl font-bold text-gray">{item.article}</span>}

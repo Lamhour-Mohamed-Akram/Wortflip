@@ -5,7 +5,6 @@ import { EmptyState } from '../components/EmptyState';
 import { FlameIcon, TargetIcon } from '../components/Icons';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { WordRow } from '../components/WordRow';
-import { itemsForLevels } from '../data';
 import type { Tab } from '../hooks/useTab';
 import { isDifficult } from '../learning/scheduler';
 import { buildFocusSession, difficultItems } from '../learning/session';
@@ -14,9 +13,9 @@ import { pluralize } from '../lib/format';
 import { useApp } from '../state/AppContext';
 
 export function DifficultScreen({ onNavigate }: { onNavigate: (tab: Tab) => void }) {
-  const { state, dispatch } = useApp();
+  const { state, dispatch, itemsFor } = useApp();
   const { settings, progress } = state;
-  const items = useMemo(() => itemsForLevels(settings.levels), [settings.levels]);
+  const items = useMemo(() => itemsFor(settings.levels), [settings.levels, itemsFor]);
   const list = useMemo(() => difficultItems(items, progress), [items, progress]);
   const focusSize = Math.min(list.length, settings.sessionSize);
   const now = Date.now();

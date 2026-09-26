@@ -4,7 +4,6 @@ import { ResetButton } from '../components/ResetButton';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { StatTile } from '../components/StatTile';
 import { Window } from '../components/Window';
-import { itemsForLevels } from '../data';
 import { MASTERED_BOX, REVIEW_INTERVALS_DAYS } from '../learning/scheduler';
 import { dueItems } from '../learning/session';
 import { accuracy, recentDays } from '../learning/stats';
@@ -17,9 +16,9 @@ import { useApp } from '../state/AppContext';
 const BOX_LABELS = ['Jetzt', ...REVIEW_INTERVALS_DAYS.map((d) => (d === 1 ? '1 Tag' : `${d} Tage`))];
 
 export function ProgressScreen() {
-  const { state } = useApp();
+  const { state, itemsFor } = useApp();
   const { settings, progress, stats, streak } = state;
-  const items = useMemo(() => itemsForLevels(settings.levels), [settings.levels]);
+  const items = useMemo(() => itemsFor(settings.levels), [settings.levels, itemsFor]);
   const now = Date.now();
 
   let newCount = 0;

@@ -41,6 +41,8 @@ export interface Settings {
   sessionSize: SessionSize;
   /** Show the English translation on the back of the card (on by default, can be switched off to stay in German). */
   showTranslation: boolean;
+  /** Show topics shared by other learners (community). */
+  showCommunity: boolean;
   onboarded: boolean;
 }
 

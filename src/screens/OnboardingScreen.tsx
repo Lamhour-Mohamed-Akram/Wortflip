@@ -47,7 +47,7 @@ export function OnboardingScreen({ onStart }: { onStart: (levels: Level[]) => vo
           nach dem anderen.
         </h1>
         <p className="mt-4 max-w-sm text-lg text-gray text-balance">
-          Karteikarten für den Wortschatz A1 bis C1. Ohne Konto, ohne Server, offline auf deinem Handy.
+          Karteikarten für den Wortschatz A1 bis C1. Ohne Konto, offline auf deinem Handy.
         </p>
       </div>
 

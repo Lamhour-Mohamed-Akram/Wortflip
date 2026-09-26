@@ -11,7 +11,7 @@ import { StatTile } from '../components/StatTile';
 import { SwipeableCard, type CardFace } from '../components/SwipeableCard';
 import { Window } from '../components/Window';
 import { Wordmark } from '../components/Wordmark';
-import { itemById, itemsForLevels, type VocabularyItem } from '../data';
+import type { VocabularyItem } from '../data';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import type { Tab } from '../hooks/useTab';
 import {
@@ -41,9 +41,9 @@ const SHORT_LABEL: Record<SessionKind, string> = { daily: 'Tag', extra: 'Extra',
 const FLIP_MS = 450;
 
 export function LearnScreen({ onNavigate }: { onNavigate: (tab: Tab) => void }) {
-  const { state, dispatch } = useApp();
+  const { state, dispatch, itemsFor, byId } = useApp();
   const { settings, progress, session, streak } = state;
-  const items = useMemo(() => itemsForLevels(settings.levels), [settings.levels]);
+  const items = useMemo(() => itemsFor(settings.levels), [settings.levels, itemsFor]);
   const now = Date.now();
   const streakDays = currentStreak(streak, now);
   const [confirmRestart, setConfirmRestart] = useState(false);
@@ -100,7 +100,7 @@ export function LearnScreen({ onNavigate }: { onNavigate: (tab: Tab) => void }) 
   }
 
   const currentId = currentCardId(session);
-  const item = currentId ? itemById.get(currentId) : undefined;
+  const item = currentId ? byId.get(currentId) : undefined;
   const cleared = session.total - remainingDistinct(session);
 
   if (!item) {
